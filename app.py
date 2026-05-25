@@ -1,120 +1,155 @@
 import streamlit as st
 
 # ==========================================
-# KELAS QUEUE CHECKOUT SUPERMARKET
+# KELAS QUEUE / ANTRIAN
 # ==========================================
-class CheckoutQueue:
+class Antrian:
     def __init__(self):
-        self.antrian = []
+        self.queue = []
 
-    # Tambah pelanggan ke antrian
+    # Tambah pelanggan
     def tambah_pelanggan(self, nama):
-        self.antrian.append(nama)
+        self.queue.append(nama)
 
     # Layani pelanggan pertama
     def layani_pelanggan(self):
-        if len(self.antrian) > 0:
-            return self.antrian.pop(0)
+        if len(self.queue) > 0:
+            return self.queue.pop(0)
         return None
-
-    # Lihat antrian sekarang
-    def lihat_antrian(self):
-        return self.antrian
 
     # Cari posisi pelanggan
     def cari_pelanggan(self, nama):
-        if nama in self.antrian:
-            return self.antrian.index(nama) + 1
+        if nama in self.queue:
+            return self.queue.index(nama) + 1
         return None
 
+    # Reset semua antrian
+    def reset_antrian(self):
+        self.queue.clear()
+
 
 # ==========================================
-# STREAMLIT UI
+# SESSION STATE
 # ==========================================
+if "queue_obj" not in st.session_state:
+    st.session_state.queue_obj = Antrian()
 
-st.set_page_config(
-    page_title="Checkout Supermarket",
-    page_icon="🛒"
-)
+queue = st.session_state.queue_obj
 
-st.title("🛒 Checkout Supermarket")
-st.write("Simulasi antrian kasir supermarket menggunakan struktur data Queue.")
-
-# Session state supaya data tidak hilang
-if 'checkout' not in st.session_state:
-    st.session_state.checkout = CheckoutQueue()
-
-queue = st.session_state.checkout
 
 # ==========================================
-# MENU TAB
+# JUDUL APLIKASI
 # ==========================================
+st.title("Sistem Antrian Supermarket")
+
+# Membuat tab
 tab1, tab2, tab3 = st.tabs([
-    "📋 Lihat Antrian",
-    "➕ Tambah Pelanggan",
-    "🔍 Cari Pelanggan"
+    "Tambah Pelanggan",
+    "Layani Pelanggan",
+    "Cari Pelanggan"
 ])
 
+
 # ==========================================
-# TAB 1 - LIHAT ANTRIAN
+# TAB 1 - TAMBAH PELANGGAN
 # ==========================================
 with tab1:
-    st.subheader("Daftar Antrian Kasir")
 
-    data_antrian = queue.lihat_antrian()
+    st.subheader("Tambah Pelanggan Baru")
 
-    if len(data_antrian) == 0:
-        st.info("Belum ada pelanggan dalam antrian.")
-    else:
-        for i, pelanggan in enumerate(data_antrian, start=1):
-            st.write(f"{i}. {pelanggan}")
+    nama = st.text_input(
+        "Masukkan nama pelanggan",
+        key="input_tambah"
+    )
 
-    st.divider()
+    if st.button(
+        "Tambah ke Antrian",
+        key="btn_tambah"
+    ):
 
-    if st.button("Layani Pelanggan Pertama"):
-        hasil = queue.layani_pelanggan()
+        if nama.strip() != "":
+            queue.tambah_pelanggan(nama)
+            st.success(f"{nama} berhasil ditambahkan!")
+        else:
+            st.warning("Nama pelanggan wajib diisi!")
 
-        if hasil:
-            st.success(f"Pelanggan '{hasil}' selesai checkout.")
+
+# ==========================================
+# TAB 2 - LAYANI PELANGGAN
+# ==========================================
+with tab2:
+
+    st.subheader("Layani Pelanggan")
+
+    if st.button(
+        "Layani Pelanggan Pertama",
+        key="btn_layani"
+    ):
+
+        pelanggan = queue.layani_pelanggan()
+
+        if pelanggan:
+            st.success(f"{pelanggan} sedang dilayani")
         else:
             st.error("Antrian masih kosong!")
 
-# ==========================================
-# TAB 2 - TAMBAH PELANGGAN
-# ==========================================
-with tab2:
-    st.subheader("Tambah Pelanggan Baru")
-
-    nama = st.text_input("Masukkan nama pelanggan")
-
-    if st.button("Tambah ke Antrian"):
-        if nama:
-            queue.tambah_pelanggan(nama)
-            st.success(f"Pelanggan '{nama}' berhasil masuk antrian.")
-        else:
-            st.warning("Nama pelanggan wajib diisi!")
 
 # ==========================================
 # TAB 3 - CARI PELANGGAN
 # ==========================================
 with tab3:
+
     st.subheader("Cari Posisi Pelanggan")
 
-    cari = st.text_input("Masukkan nama pelanggan")
+    cari = st.text_input(
+        "Masukkan nama pelanggan",
+        key="input_cari"
+    )
 
-    if st.button("Cari Posisi"):
+    if st.button(
+        "Cari Posisi",
+        key="btn_cari"
+    ):
+
         posisi = queue.cari_pelanggan(cari)
 
         if posisi:
-            st.success(f"{cari} berada di posisi antrian ke-{posisi}")
+            st.success(
+                f"{cari} berada di posisi antrian ke-{posisi}"
+            )
         else:
             st.error("Pelanggan tidak ditemukan.")
 
+
 # ==========================================
-# RESET
+# TAMPILKAN ANTRIAN
 # ==========================================
 st.divider()
 
-if st.button("Reset Semua Antrian"):
-    st.session_state.checkout = CheckoutQueue()
-    st.rerun()
+st.subheader("Daftar Antrian Saat Ini")
+
+if len(queue.queue) > 0:
+
+    nomor = 1
+
+    for pelanggan in queue.queue:
+        st.write(f"{nomor}. {pelanggan}")
+        nomor += 1
+
+else:
+    st.warning("Belum ada antrian.")
+
+
+# ==========================================
+# RESET ANTRIAN
+# ==========================================
+st.divider()
+
+if st.button(
+    "Reset Semua Antrian",
+    key="btn_reset"
+):
+
+    queue.reset_antrian()
+
+    st.success("Semua antrian berhasil direset!")
