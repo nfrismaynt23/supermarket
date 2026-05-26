@@ -112,7 +112,7 @@ if 'is_logged_in' not in st.session_state:
 if 'riwayat_transaksi' not in st.session_state:
     st.session_state.riwayat_transaksi = []
 
-# MASTER DATABASE: 20 PRODUK SUPERMARKET
+# MASTER DATABASE: 20 PRODUK SUPERMARKET (DIFASTIKAN DIKUNCI DI SINI)
 if 'database_produk' not in st.session_state:
     st.session_state.database_produk = {
         "Minyak Goreng 2L": 36000,
@@ -121,3 +121,20 @@ if 'database_produk' not in st.session_state:
         "Beras Premium 5kg": 75000,
         "Gula Pasir 1kg": 17000,
         "Teh Celup Isi 25": 6000,
+        "Kopi Bubuk 100g": 12000,
+        "Roti Tawar Kupas": 15000,
+        "Mentega Serbaguna": 8500,
+        "Kecap Manis Bango": 24000,
+        "Saus Sambal Botol": 14500,
+        "Sabun Mandi Cair": 22000,
+        "Shampoo Anti Dandruff": 28000,
+        "Pasta Gigi Herbal": 12500,
+        "Deterjen Bubuk 800g": 19500,
+        "Cairan Pencuci Piring": 10500,
+        "Air Mineral 600ml": 3500,
+        "Keripik Kentang Snack": 11000,
+        "Cokelat Batang Premium": 16000,
+        "Tisu Wajah 200 sheets": 9000
+    }
+
+antrean = st.session_state.
