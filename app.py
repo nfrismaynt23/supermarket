@@ -56,7 +56,7 @@ class QueueSupermarket:
 # ==========================================
 st.set_page_config(page_title="FreshMart Express", layout="wide")
 
-# --- CUSTOM CSS: GRADASI BIRU CERAH & SCOPED TEXT (ANTI-TABRAKAN) ---
+# --- CUSTOM CSS: GRADASI BIRU CERAH & SCOPED TEXT ---
 custom_css = """
 <style>
     /* Latar Belakang Utama Aplikasi: Gradasi Biru Cerah Lembut */
@@ -158,7 +158,6 @@ if not st.session_state.is_logged_in:
         password = st.text_input("Password:", type="password")
         
         st.markdown('<div style="margin-top: 15px;"></div>', unsafe_allow_html=True)
-        # Baris di bawah ini yang tadinya eror sudah diperbaiki total:
         if st.button("Masuk ke Sistem", type="primary", use_container_width=True):
             if username == "admin" and password == "123":
                 st.session_state.is_logged_in = True
@@ -168,7 +167,7 @@ if not st.session_state.is_logged_in:
         st.markdown('</div>', unsafe_allow_html=True)
 
 # ==========================================
-# HALAMAN 2: DASHBOARD UTAMA (SETELAH LOGIN)
+# HALAMAN 2: DASHBOARD UTAMA
 # ==========================================
 else:
     st.sidebar.markdown("<h3 style='letter-spacing: 1px; font-weight:600; margin-bottom:0; color:#1e3a8a;'>FreshMart Express</h3>", unsafe_allow_html=True)
@@ -218,5 +217,4 @@ else:
             st.info("Kondisi Jalur Kasir: Kosong / Standby Melayani Pelanggan.")
         else:
             pelanggan_sekarang = antrean.head
-            st.markdown(f"""
-            <div class="clean-box" style="border-left: 6px solid #1
+            # BAGIAN INI SUDAH DIPERBAIKI TOTAL AG
