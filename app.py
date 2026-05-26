@@ -94,7 +94,7 @@ with tab1:
     st.write("---")
     
     # Menampilkan visualisasi teks antrean
-    antrean_teks = antrean.get_antrean_string()
+    antrean_teks = antrean.dapatkan_antrean_string()
     st.code(antrean_teks, language="text")
 
 # TAB 2: Menambahkan Pelanggan Baru (Enqueue)
