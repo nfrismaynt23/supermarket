@@ -55,51 +55,61 @@ class QueueSupermarket:
 # ==========================================
 st.set_page_config(page_title="Checkout Supermarket", page_icon="🛒", layout="wide")
 
-# --- CUSTOM CSS UNTUK BACKGROUND & FONT KEREN ---
+# --- CUSTOM CSS CLEAN & PROFESSIONAL THEME ---
+# Memaksa warna background dan teks agar konsisten & tajam (Anti Gagal Dark Mode)
 custom_css = """
 <style>
-    /* Mengganti background utama dengan gambar supermarket blur transparan */
+    /* Background utama aplikasi dibuat abu-abu sangat muda bersih */
     .stApp {
-        background: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), 
-                    url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1974&auto=format&fit=crop');
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
+        background-color: #F8FAFC !important;
     }
     
-    /* Mengubah font global agar estetik */
-    html, body, [class*="css"] {
-        font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
-        color: #1E293B !important;
-    }
-    
-    /* Styling Judul Utama */
-    .main-title {
-        font-size: 42px !important;
-        font-weight: 800 !important;
+    /* Memaksa semua teks reguler berwarna gelap tajam agar terbaca */
+    p, span, label, th, td, h1, h2, h3, h4 {
         color: #0F172A !important;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-        margin-bottom: 5px;
+        font-family: 'Inter', 'Segoe UI', sans-serif !important;
     }
     
-    /* Styling Subjudul */
-    .sub-title {
-        font-size: 20px !important;
-        font-weight: 500 !important;
+    /* Judul Premium */
+    .app-title {
+        font-size: 36px !important;
+        font-weight: 800 !important;
+        color: #1E3A8A !important; /* Warna Biru Navy Profesional */
+        margin-bottom: 2px !important;
+    }
+    
+    .app-subtitle {
+        font-size: 18px !important;
+        font-weight: 400 !important;
         color: #475569 !important;
-        margin-bottom: 25px;
+        margin-bottom: 30px !important;
     }
 
-    /* Membuat kartu/kotak informasi jadi efek Glassmorphism transparan mentereng */
-    .custom-card {
-        background: rgba(255, 255, 255, 0.7) !important;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border-radius: 16px !important;
-        border: 1px solid rgba(255, 255, 255, 0.5) !important;
-        padding: 25px !important;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05) !important;
-        margin-bottom: 20px;
+    /* Kotak Informasi Berwarna Solid & Kontras Tinggi */
+    .info-box {
+        background-color: #FFFFFF !important;
+        border-left: 5px solid #2563EB !important; /* Aksen Biru */
+        border-radius: 8px !important;
+        padding: 20px !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+        margin-bottom: 25px !important;
+    }
+    
+    /* Kartu Statistik Angka */
+    .stat-card-red {
+        background-color: #FEF2F2 !important; /* Merah Muda Halus */
+        border: 1px solid #FCA5A5 !important;
+        border-radius: 12px !important;
+        padding: 20px !important;
+        text-align: center !important;
+    }
+    
+    .stat-card-green {
+        background-color: #F0FDF4 !important; /* Hijau Muda Halus */
+        border: 1px solid #86EFAC !important;
+        border-radius: 12px !important;
+        padding: 20px !important;
+        text-align: center !important;
     }
 </style>
 """
@@ -135,114 +145,16 @@ if st.sidebar.button("🚨 Reset Sistem Kasir", type="secondary"):
 
 # MENU 1: BERANDA
 if menu == "🏠 Beranda":
-    st.markdown('<p class="main-title">🛒 Selamat Datang di Simulasi Antrean Supermarket</p>', unsafe_allow_html=True)
-    st.markdown('<p class="sub-title">Sistem Manajemen Antrean Kasir Berbasis Struktur Data Queue (FIFO)</p>', unsafe_allow_html=True)
+    st.markdown('<h1 class="app-title">🛒 Selamat Datang di Simulasi Antrean Supermarket</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="app-subtitle">Sistem Manajemen Antrean Kasir Berbasis Struktur Data Queue (FIFO)</p>', unsafe_allow_html=True)
     
-    # Bungkus deskripsi ke dalam Custom Card (Efek Glassmorphism)
+    # Box Informasi Utama
     st.markdown("""
-    <div class="custom-card">
-        <h3>💡 Informasi Sistem</h3>
-        <p>Aplikasi ini dirancang untuk mensimulasikan bagaimana sebuah antrean di kasir supermarket berjalan secara riil. 
-        Dengan menggunakan prinsip utama <b>First In, First Out (FIFO)</b>, pelanggan yang masuk antrean pertama kali 
-        akan menjadi yang pertama diproses pembayarannya oleh kasir.</p>
+    <div class="info-box">
+        <h4 style="margin-top:0; color:#1E3A8A !important; font-weight:700;">💡 Cara Kerja Sistem (Struktur Data Queue)</h4>
+        <p style="margin:0; font-size:15px; line-height:1.6;">
+            Aplikasi ini mensimulasikan alur pelayanan kasir di sebuah market secara riil. 
+            Menggunakan metode <b>First In, First Out (FIFO)</b>, pelanggan yang pertama kali mengantre 
+            akan diprioritaskan untuk dilayani terlebih dahulu sebelum pelanggan yang datang setelahnya.
+        </p>
     </div>
-    """, unsafe_allow_html=True)
-    
-    st.write("")
-    st.markdown("### 📊 Status Kasir Saat Ini")
-    
-    # Hitung antrean
-    panjang = 0
-    curr = antrean.head
-    while curr:
-        panjang += 1
-        curr = curr.next
-        
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown(f"""
-        <div class="custom-card" style="text-align: center;">
-            <p style="margin:0; font-size:16px; color:#64748B;">Pelanggan Menunggu</p>
-            <p style="margin:0; font-size:36px; font-weight:700; color:#EF4444;">{panjang} Orang</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-    with col2:
-        st.markdown(f"""
-        <div class="custom-card" style="text-align: center;">
-            <p style="margin:0; font-size:16px; color:#64748B;">Total Sukses Dilayani</p>
-            <p style="margin:0; font-size:36px; font-weight:700; color:#10B981;">{antrean.total_pelanggan_dilayani} Orang</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-# MENU 2: LIHAT ANTREAN
-elif menu == "👥 Lihat Antrean":
-    st.markdown('<p class="main-title">👥 Kondisi Antrean Kasir Saat Ini</p>', unsafe_allow_html=True)
-    
-    panjang = 0
-    curr = antrean.head
-    while curr:
-        panjang += 1
-        curr = curr.next
-
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric(label="Jumlah Antrean Sekarang", value=f"{panjang} Orang")
-    with col2:
-        st.metric(label="Total Pelanggan Sukses Dilayani", value=f"{antrean.total_pelanggan_dilayani} Orang")
-    
-    st.write("---")
-    antrean_teks = antrean.dapatkan_antrean_string()
-    st.text_area("Daftar Antrean (Urutan teratas adalah yang terdepan):", value=antrean_teks, height=250, disabled=True)
-
-# MENU 3: TAMBAH PELANGGAN
-elif menu == "➕ Tambah Pelanggan":
-    st.markdown('<p class="main-title">➕ Masukkan Pelanggan Baru</p>', unsafe_allow_html=True)
-    
-    st.markdown('<div class="custom-card">', unsafe_allow_html=True)
-    with st.form("form_pelanggan", clear_on_submit=True):
-        nama_pelanggan = st.text_input("Nama Pelanggan:")
-        jumlah_item = st.number_input("Jumlah Barang Belanjaan:", min_value=1, max_value=100, value=5)
-        submit_button = st.form_submit_button("Masuk Antrean", type="primary")
-        
-        if submit_button:
-            if nama_pelanggan.strip():
-                antrean.tambah_pelanggan(nama_pelanggan, jumlah_item)
-                st.success(f"🛒 '{nama_pelanggan}' ({jumlah_item} barang) berhasil masuk ke antrean!")
-                time.sleep(1)
-                st.rerun()
-            else:
-                st.warning("Harap masukkan nama pelanggan terlebih dahulu.")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# MENU 4: PROSES CHECKOUT
-elif menu == "🧾 Proses Checkout":
-    st.markdown('<p class="main-title">🧾 Meja Kasir (Proses Pelayanan)</p>', unsafe_allow_html=True)
-    
-    if antrean.is_empty():
-        st.info("🎉 Semua antrean sudah selesai diproses. Kasir sedang senggang!")
-    else:
-        pelanggan_depan = antrean.head
-        st.warning(f"Pelanggan berikutnya yang harus dilayani: **{pelanggan_depan.nama}** ({pelanggan_depan.jumlah_barang} barang).")
-        
-        if st.button("Proses & Selesaikan Pembayaran", type="primary"):
-            dilayani = antrean.layani_pelanggan()
-            if dilayani:
-                st.success(f"✅ Selesai! Pembayaran atas nama **{dilayani.nama}** berhasil diproses.")
-                st.info(f"Kasir telah sukses memindai {dilayani.jumlah_barang} item barang.")
-                time.sleep(1.5)
-                st.rerun()
-
-# MENU 5: TENTANG APLIKASI
-elif menu == "ℹ️ Tentang Aplikasi":
-    st.markdown('<p class="main-title">ℹ️ Tentang Aplikasi</p>', unsafe_allow_html=True)
-    st.markdown("""
-    <div class="custom-card">
-        <h3>🧠 Konsep Struktur Data yang Digunakan:</h3>
-        <ul>
-            <li><b>Linked List:</b> Digunakan untuk alokasi memori antrean dinamis via objek Node.</li>
-            <li><b>Queue (Antrean):</b> Memanfaatkan operasi <i>Enqueue</i> (Tambah) dan <i>Dequeue</i> (Layani) dengan aturan ketat <b>FIFO</b>.</li>
-        </ul>
-        <p style="font-size: 13px; color: #64748B; margin-top:20px;">Dibuat untuk keperluan tugas demonstrasi akademis.</p>
-    </div>
-    """, unsafe_allow_html=True)
