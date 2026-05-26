@@ -88,7 +88,7 @@ custom_css = """
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
     }
     
-    /* Pewarnaan Teks Khusus di Dalam Clean Box Saja (Agar tidak merusak teks sistem) */
+    /* Pewarnaan Teks Khusus di Dalam Clean Box Saja */
     .clean-box p, .clean-box h4, .clean-box span {
         color: #334155 !important;
         font-family: 'Segoe UI', Arial, sans-serif !important;
@@ -112,7 +112,7 @@ if 'is_logged_in' not in st.session_state:
 if 'riwayat_transaksi' not in st.session_state:
     st.session_state.riwayat_transaksi = []
 
-# MASTER DATABASE: 20 PRODUK SUPERMARKET (DIFASTIKAN DIKUNCI DI SINI)
+# MASTER DATABASE: 20 PRODUK SUPERMARKET
 if 'database_produk' not in st.session_state:
     st.session_state.database_produk = {
         "Minyak Goreng 2L": 36000,
@@ -137,4 +137,27 @@ if 'database_produk' not in st.session_state:
         "Tisu Wajah 200 sheets": 9000
     }
 
-antrean = st.session_state.
+# Baris di bawah ini dipastikan sudah lengkap tanpa terputus:
+antrean = st.session_state.antrean_kasir
+
+# ==========================================
+# HALAMAN 1: LOGIN (MENGGUNAKAN LOGO KAMPUS)
+# ==========================================
+if not st.session_state.is_logged_in:
+    col_l, col_m, col_r = st.columns([1, 1.1, 1])
+    
+    with col_m:
+        st.markdown('<div style="text-align:center; margin-top:60px; margin-bottom:20px;">', unsafe_allow_html=True)
+        logo_url = "https://global.ac.id/wp-content/uploads/2021/01/logo-global-80.png"
+        st.image(logo_url, width=130)
+        st.markdown('<h1 class="main-title" style="font-size: 28px; letter-spacing: 1px; margin-top:15px;">FreshMart Express</h1>', unsafe_allow_html=True)
+        st.markdown('<p style="color: #475569; font-size: 13px;">Sistem Informasi Manajemen Antrean Kasir</p>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        st.markdown('<div class="clean-box">', unsafe_allow_html=True)
+        username = st.text_input("Username / NIK Pegawai:")
+        password = st.text_input("Password:", type="password")
+        
+        st.markdown('<div style="margin-top: 15px;"></div>', unsafe_allow_html=True)
+        if st.button("Masuk ke Sistem", type="primary", use_container_
+                     
