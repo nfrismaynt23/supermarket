@@ -137,7 +137,6 @@ if 'database_produk' not in st.session_state:
         "Tisu Wajah 200 sheets": 9000
     }
 
-# Baris di bawah ini dipastikan sudah lengkap tanpa terputus:
 antrean = st.session_state.antrean_kasir
 
 # ==========================================
@@ -159,5 +158,65 @@ if not st.session_state.is_logged_in:
         password = st.text_input("Password:", type="password")
         
         st.markdown('<div style="margin-top: 15px;"></div>', unsafe_allow_html=True)
-        if st.button("Masuk ke Sistem", type="primary", use_container_
-                     
+        # Baris di bawah ini yang tadinya eror sudah diperbaiki total:
+        if st.button("Masuk ke Sistem", type="primary", use_container_width=True):
+            if username == "admin" and password == "123":
+                st.session_state.is_logged_in = True
+                st.rerun()
+            else:
+                st.error("Kredensial yang Anda masukkan salah.")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+# ==========================================
+# HALAMAN 2: DASHBOARD UTAMA (SETELAH LOGIN)
+# ==========================================
+else:
+    st.sidebar.markdown("<h3 style='letter-spacing: 1px; font-weight:600; margin-bottom:0; color:#1e3a8a;'>FreshMart Express</h3>", unsafe_allow_html=True)
+    st.sidebar.markdown("<p style='color:#64748b; font-size:12px; margin-top:0;'>Otoritas Kasir: Aktif</p>", unsafe_allow_html=True)
+    st.sidebar.markdown("---")
+    
+    menu = st.sidebar.radio(
+        "Menu Navigasi:",
+        [
+            "Beranda Utama", 
+            "Daftar Produk Toko",
+            "Monitor Antrean", 
+            "Tambah Pelanggan Baru", 
+            "Proses Pembayaran (Checkout)", 
+            "Riwayat Jurnal Transaksi"
+        ]
+    )
+    
+    st.sidebar.markdown("---")
+    if st.sidebar.button("Keluar Sistem", type="secondary", use_container_width=True):
+        st.session_state.is_logged_in = False
+        st.rerun()
+
+    # MENU 1: BERANDA UTAMA
+    if menu == "Beranda Utama":
+        st.markdown('<h1 class="main-title" style="margin-bottom:0px;">Statistik Toko & Kasir</h1>', unsafe_allow_html=True)
+        st.markdown('<p style="color:#475569; margin-bottom:25px;">Ringkasan aktivitas operasional retail secara real-time</p>', unsafe_allow_html=True)
+        
+        panjang_antrean = 0
+        curr = antrean.head
+        while curr:
+            panjang_antrean += 1
+            curr = curr.next
+            
+        col_m1, col_m2, col_m3 = st.columns(3)
+        with col_m1:
+            st.metric(label="Antrean Aktif Saat Ini", value=f"{panjang_antrean} Orang")
+        with col_m2:
+            st.metric(label="Pelanggan Sukses Dilayani", value=f"{antrean.total_pelanggan_dilayani} Orang")
+        with col_m3:
+            st.metric(label="Estimasi Jurnal Selesai", value=f"{len(st.session_state.riwayat_transaksi)} Transaksi")
+
+        st.markdown('<div style="margin-top: 20px;"></div>', unsafe_allow_html=True)
+
+        st.markdown('<h3 class="main-title">Status Jalur Kasir Utama</h3>', unsafe_allow_html=True)
+        if antrean.is_empty():
+            st.info("Kondisi Jalur Kasir: Kosong / Standby Melayani Pelanggan.")
+        else:
+            pelanggan_sekarang = antrean.head
+            st.markdown(f"""
+            <div class="clean-box" style="border-left: 6px solid #1
