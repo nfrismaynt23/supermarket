@@ -6,8 +6,8 @@ import streamlit as st
 class PelangganNode:
     def __init__(self, nama, list_belanjaan, total_harga):
         self.nama = nama
-        self.list_belanjaan = list_belanjaan  # List nama barang
-        self.total_harga = total_harga        # Total harga belanjaan
+        self.list_belanjaan = list_belanjaan  
+        self.total_harga = total_harga        
         self.next = None
 
 class QueueSupermarket:
@@ -84,7 +84,7 @@ custom_css = """
 """
 st.markdown(custom_css, unsafe_allow_html=True)
 
-# --- INISIALISASI DATA DI SESSION STATE (SANGAT PENTING AGAR TIDAK ERROR) ---
+# --- INISIALISASI DATA DI SESSION STATE ---
 if 'antrean_kasir' not in st.session_state:
     st.session_state.antrean_kasir = QueueSupermarket()
 if 'is_logged_in' not in st.session_state:
@@ -114,10 +114,9 @@ if 'database_produk' not in st.session_state:
         "Air Mineral 600ml": 3500,
         "Keripik Kentang Snack": 11000,
         "Cokelat Batang Premium": 16000,
-        "Tisu Wajah 200 sheets": 9000
+        "Tissu Wajah 200 sheets": 9000
     }
 
-# Ambil referensi objek dari session state
 antrean = st.session_state.antrean_kasir
 
 # ==========================================
@@ -172,112 +171,17 @@ else:
         st.session_state.is_logged_in = False
         st.rerun()
 
-    # MENU 1: BERANDA
+    # MENU 1: BERANDA UTAMA (SUDAH DIPERBAIKi JADI JAUH LEBIH INTERAKTIF)
     if menu == "Beranda Utama":
-        st.markdown('<h2>Dashboard Utama</h2>', unsafe_allow_html=True)
+        st.markdown('<h1 style="margin-bottom:0px;">Statistik Toko & Kasir</h1>', unsafe_allow_html=True)
+        st.markdown('<p style="color:#64748b; margin-bottom:25px;">Ringkasan aktivitas operasional retail secara real-time</p>', unsafe_allow_html=True)
         
-        st.markdown("""
-        <div class="clean-box">
-            <h4 style="margin-top:0; color: #38bdf8;">Konsep Struktur Data Queue (FIFO)</h4>
-            <p style="color: #94a3b8; font-size: 14px; margin-bottom:0;">
-                Program ini mensimulasikan manajemen pelayanan kasir berdasarkan prinsip First In First Out. 
-                Data dikelola menggunakan Linked List dinamis untuk melacak kedatangan pelanggan secara sistematis.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        panjang = 0
+        # Hitung jumlah antrean saat ini
+        panjang_antrean = 0
         curr = antrean.head
         while curr:
-            panjang += 1
+            panjang_antrean += 1
             curr = curr.next
             
-        col_b1, col_b2 = st.columns(2)
-        with col_b1:
-            st.metric("Jumlah Antrean Menunggu", f"{panjang} Orang")
-        with col_b2:
-            st.metric("Total Pelanggan Terlayani", f"{antrean.total_pelanggan_dilayani} Orang")
-
-    # MENU 2: LIHAT DAFTAR PRODUK
-    elif menu == "Daftar Produk Toko":
-        st.markdown('<h2>Katalog Produk Aktif (20 Item)</h2>', unsafe_allow_html=True)
-        
-        st.markdown('<div class="clean-box">', unsafe_allow_html=True)
-        nomor_urut = 1
-        for nama_barang, harga_barang in st.session_state.database_produk.items():
-            st.markdown(f"<p style='font-size:15px; margin-bottom:6px;'>{nomor_urut}. <b>{nama_barang}</b> — Rp {harga_barang:,}</p>", unsafe_allow_html=True)
-            nomor_urut += 1
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    # MENU 3: MONITOR ANTREAN
-    elif menu == "Monitor Antrean":
-        st.markdown('<h2>Urutan Barisan Pelanggan</h2>', unsafe_allow_html=True)
-        antrean_teks = antrean.dapatkan_antrean_string()
-        st.text_area("Data Node Memori saat ini (FIFO):", value=antrean_teks, height=200, disabled=True)
-
-    # MENU 4: TAMBAH PELANGGAN BARU (SUDAH DIPERBAIKI)
-    elif menu == "Tambah Pelanggan Baru":
-        st.markdown('<h2>Registrasi Kedatangan Pelanggan</h2>', unsafe_allow_html=True)
-        
-        with st.form("form_tambah", clear_on_submit=True):
-            nama_input = st.text_input("Nama Pelanggan:")
-            
-            pilihan_barang = st.multiselect(
-                "Pilih Barang Yang Dibeli (Bisa klik lebih dari satu):",
-                options=list(st.session_state.database_produk.keys())
-            )
-            
-            submit_button = st.form_submit_button("Masukkan ke Antrean")
-            
-            if submit_button:
-                if not nama_input.strip():
-                    st.warning("Kolom nama wajib diisi.")
-                elif not pilihan_barang:
-                    st.warning("Pelanggan minimal harus membeli 1 barang untuk mengantre.")
-                else:
-                    # Proses perhitungan total harga produk pilihan
-                    total_harga_hitung = sum(st.session_state.database_produk[item] for item in pilihan_barang)
-                    
-                    # Tambahkan langsung ke dalam state antrean
-                    st.session_state.antrean_kasir.tambah_pelanggan(nama_input, pilihan_barang, total_harga_hitung)
-                    st.success(f"Sukses! Pelanggan '{nama_input}' berhasil ditambahkan ke antrean.")
-                    st.rerun()
-
-    # MENU 5: PROSES CHECKOUT
-    elif menu == "Proses Pembayaran (Checkout)":
-        st.markdown('<h2>Meja Transaksi Utama</h2>', unsafe_allow_html=True)
-        
-        if antrean.is_empty():
-            st.info("Sistem siap. Tidak ada antrean pelanggan saat ini.")
-        else:
-            pelanggan_depan = antrean.head
-            
-            st.write(f"Pelanggan Terdepan: **{pelanggan_depan.nama}**")
-            st.write("Daftar belanjaan yang dibawa:")
-            
-            st.markdown('<div class="clean-box" style="background-color: #1f2937 !important;">', unsafe_allow_html=True)
-            for b in pelanggan_depan.list_belanjaan:
-                st.write(f"- {b} (Rp {st.session_state.database_produk[b]:,})")
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-            st.write(f"### Total Invoice: **Rp {pelanggan_depan.total_harga:,}**")
-            
-            if st.button("Selesaikan Pembayaran", type="primary"):
-                dilayani = st.session_state.antrean_kasir.layani_pelanggan()
-                if dilayani:
-                    catatan = f"Pelanggan {dilayani.nama} • {len(dilayani.list_belanjaan)} item • Total: Rp {dilayani.total_harga:,} [Selesai]"
-                    st.session_state.riwayat_transaksi.append(catatan)
-                    st.success("Transaksi berhasil diproses.")
-                    st.rerun()
-
-    # MENU 6: RIWAYAT TRANSAKSI KELUAR
-    elif menu == "Riwayat Jurnal Transaksi":
-        st.markdown('<h2>Jurnal Rekap Transaksi</h2>', unsafe_allow_html=True)
-        
-        if not st.session_state.riwayat_transaksi:
-            st.info("Jurnal transaksi harian masih kosong.")
-        else:
-            st.markdown('<div class="clean-box">', unsafe_allow_html=True)
-            for item in st.session_state.riwayat_transaksi:
-                st.markdown(f"<p style='color: #10b981 !important;'>✓ {item}</p>", unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+        # Layout Ringkasan Kartu Metrik (3 Kolom Sejajar)
+        col_m1, col_m2, col_m3 = st.columns(3
