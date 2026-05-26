@@ -1,5 +1,4 @@
 import streamlit as st
-import time
 
 # ==========================================
 # KELAS NODE PELANGGAN & ANTRIAN (QUEUE)
@@ -53,228 +52,181 @@ class QueueSupermarket:
 # ==========================================
 # PROGRAM UTAMA (STREAMLIT UI)
 # ==========================================
-st.set_page_config(page_title="Checkout Supermarket", page_icon="🛒", layout="wide")
+st.set_page_config(page_title="Sistem Kasir Supermarket", page_icon="🛒", layout="wide")
 
-# --- CUSTOM CSS: FULL GLASSMORPHISM INTERIOR MALL ---
+# --- CUSTOM CSS: WARNA BACKGROUND MENARIK (ANTI-KOSONG) ---
 custom_css = """
 <style>
-    /* 1. Pasang background gambar mall UTUH & JELAS di seluruh aplikasi */
     .stApp {
-        background: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)), 
-                    url('https://images.unsplash.com/photo-1534723452862-4c874018d66d?q=80&w=2070&auto=format&fit=crop');
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
+        background: linear-gradient(135deg, #1e3a8a 0%, #0284c7 100%) !important;
     }
-    
-    /* 2. Mengubah Menu Navigasi Samping (Sidebar) jadi Putih Kaca Transparan */
     [data-testid="stSidebar"] {
-        background: rgba(255, 255, 255, 0.65) !important;
-        backdrop-filter: blur(15px) !important;
-        -webkit-backdrop-filter: blur(15px) !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.4) !important;
+        background-color: #0b0f19 !important;
+        border-right: 2px solid #3b82f6 !important;
     }
-    
-    /* 3. Kunci semua warna teks di aplikasi (termasuk sidebar) agar TETAP HITAM TAJAM */
-    h1, h2, h3, h4, p, span, label, th, td, li, div {
-        color: #0F172A !important;
-        font-family: 'Segoe UI', Roboto, sans-serif !important;
+    h1, h2, h3, h4, p, span, label, li, div {
+        color: #ffffff !important;
+        font-family: 'Segoe UI', sans-serif !important;
     }
-    
-    /* Warna teks khusus pilihan radio button di sidebar agar hitam pekat */
     [data-testid="stWidgetLabel"] p, .st-dc, .st-da, .st-db {
-        color: #0F172A !important;
-        font-weight: 600 !important;
+        color: #ffffff !important;
     }
-    
-    /* 4. Desain Judul Premium */
-    .title-premium {
-        font-size: 38px !important;
-        font-weight: 800 !important;
-        color: #1E3A8A !important; /* Biru Navy */
-        text-shadow: 1px 1px 3px rgba(255,255,255,0.8);
-        margin-bottom: 2px !important;
-    }
-    
-    .subtitle-premium {
-        font-size: 18px !important;
-        font-weight: 600 !important;
-        color: #334155 !important;
-        text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
-        margin-bottom: 30px !important;
-    }
-
-    /* 5. Kotak Konten Utama Efek Kaca Transparan Mewah */
     .clean-box {
-        background: rgba(255, 255, 255, 0.75) !important;
-        backdrop-filter: blur(8px);
-        border-left: 6px solid #2563EB !important;
-        border-radius: 12px !important;
-        padding: 22px !important;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
-        margin-bottom: 25px !important;
-    }
-    
-    /* Kotak Angka Merah Transparan */
-    .card-wait {
-        background: rgba(254, 242, 242, 0.85) !important;
-        backdrop-filter: blur(5px);
-        border: 1px solid #FCA5A5 !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-left: 6px solid #38bdf8 !important;
         border-radius: 12px !important;
         padding: 20px !important;
-        text-align: center !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
-    }
-    
-    /* Kotak Angka Hijau Transparan */
-    .card-success {
-        background: rgba(240, 253, 244, 0.85) !important;
-        backdrop-filter: blur(5px);
-        border: 1px solid #86EFAC !important;
-        border-radius: 12px !important;
-        padding: 20px !important;
-        text-align: center !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+        margin-bottom: 20px !important;
     }
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
 
-# Inisialisasi session state
+# --- INISIALISASI DATA KASIR ---
 if 'antrean_kasir' not in st.session_state:
     st.session_state.antrean_kasir = QueueSupermarket()
+if 'is_logged_in' not in st.session_state:
+    st.session_state.is_logged_in = False
+if 'riwayat_transaksi' not in st.session_state:
+    st.session_state.riwayat_transaksi = []
+if 'data_produk' not in st.session_state:
+    # Menggunakan list biasa agar mudah dijelaskan tanpa library pandas
+    st.session_state.data_produk = [
+        "PRD01 - Susu UHT Kotak (Rp 18.500)",
+        "PRD02 - Mie Instan Cup (Rp 5.000)",
+        "PRD03 - Minyak Goreng 2L (Rp 36.000)",
+        "PRD04 - Roti Gandum Kasur (Rp 15.000)"
+    ]
 
 antrean = st.session_state.antrean_kasir
 
 # ==========================================
-# SIDEBAR NAVIGATION (PUTIH KACA)
+# GERBANG 1: HALAMAN LOGIN
 # ==========================================
-st.sidebar.markdown("<h2 style='font-weight:800; color:#1E3A8A !important; margin-top:20px;'>🏪 Navigasi Menu</h2>", unsafe_allow_html=True)
-st.sidebar.write("Silakan pilih menu:")
-
-menu = st.sidebar.radio(
-    "Pilih Halaman:",
-    ["🏠 Beranda", "👥 Lihat Antrean", "➕ Tambah Pelanggan", "🧾 Proses Checkout", "ℹ️ Tentang Aplikasi"]
-)
-
-st.sidebar.markdown("---")
-if st.sidebar.button("🚨 Reset Sistem Kasir", type="secondary"):
-    st.session_state.antrean_kasir = QueueSupermarket()
-    st.success("Sistem berhasil direset!")
-    time.sleep(1)
-    st.rerun()
-
-# ==========================================
-# LOGIKA HALAMAN
-# ==========================================
-
-# MENU 1: BERANDA
-if menu == "🏠 Beranda":
-    st.markdown('<h1 class="title-premium">🛒 Selamat Datang di Simulasi Antrean Supermarket</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle-premium">Sistem Manajemen Antrean Kasir Berbasis Struktur Data Queue (FIFO)</p>', unsafe_allow_html=True)
+if not st.session_state.is_logged_in:
+    st.markdown('<div style="text-align:center; margin-top:60px;">', unsafe_allow_html=True)
+    st.markdown('<h1 style="color: #38bdf8;">🔓 MENU LOGIN KASIR SUPERMARKET</h1>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
     
-    st.markdown("""
-    <div class="clean-box">
-        <h4 style="margin-top:0; color:#1E3A8A !important; font-weight:700;">💡 Alur Kerja Antrean Kasir</h4>
-        <p style="margin:0; font-size:15px; line-height:1.6; font-weight:500;">
-            Aplikasi ini mensimulasikan kasir pusat belanja besar di dalam gedung/mall secara riil. 
-            Menerapkan metode <b>First In, First Out (FIFO)</b>, di mana setiap pelanggan baru yang datang 
-            akan mengantre di belakang, dan kasir akan menyelesaikan belanjaan dari orang yang berada di barisan paling depan terlebih dahulu.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("<h3 style='font-weight:700; margin-bottom:15px; text-shadow: 1px 1px 2px white;'>📊 Ringkasan Status Meja Kasir</h3>", unsafe_allow_html=True)
-    
-    panjang = 0
-    curr = antrean.head
-    while curr:
-        panjang += 1
-        curr = curr.next
+    col_l, col_m, col_r = st.columns([1, 1.2, 1])
+    with col_m:
+        st.markdown('<div class="clean-box">', unsafe_allow_html=True)
+        username = st.text_input("Username:")
+        password = st.text_input("Password:", type="password")
         
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown(f"""
-        <div class="card-wait">
-            <p style="margin:0; font-size:16px; font-weight:700; color:#991B1B !important;">Pelanggan Menunggu Saat Ini</p>
-            <p style="margin:5px 0 0 0; font-size:38px; font-weight:800; color:#E53E3E !important;">{panjang} Orang</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-    with col2:
-        st.markdown(f"""
-        <div class="card-success">
-            <p style="margin:0; font-size:16px; font-weight:700; color:#166534 !important;">Total Sukses Dilayani</p>
-            <p style="margin:5px 0 0 0; font-size:38px; font-weight:800; color:#38A169 !important;">{antrean.total_pelanggan_dilayani} Orang</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-# MENU 2: LIHAT ANTREAN
-elif menu == "👥 Lihat Antrean":
-    st.markdown('<h1 class="title-premium">👥 Kondisi Antrean Kasir Saat Ini</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle-premium">Daftar urutan pelanggan yang sedang mengantre di kasir</p>', unsafe_allow_html=True)
-    
-    panjang = 0
-    curr = antrean.head
-    while curr:
-        panjang += 1
-        curr = curr.next
-
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric(label="Jumlah Antrean Sekarang", value=f"{panjang} Orang")
-    with col2:
-        st.metric(label="Total Pelanggan Sukses Dilayani", value=f"{antrean.total_pelanggan_dilayani} Orang")
-    
-    st.write("---")
-    antrean_teks = antrean.dapatkan_antrean_string()
-    st.text_area("Urutan Antrean (Baris paling atas adalah antrean terdepan):", value=antrean_teks, height=250, disabled=True)
-
-# MENU 3: TAMBAH PELANGGAN
-elif menu == "➕ Tambah Pelanggan":
-    st.markdown('<h1 class="title-premium">➕ Masukkan Pelanggan Baru</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle-premium">Tambahkan data pelanggan yang baru menuju kasir</p>', unsafe_allow_html=True)
-    
-    with st.form("form_pelanggan", clear_on_submit=True):
-        nama_pelanggan = st.text_input("Nama Pelanggan:")
-        jumlah_item = st.number_input("Jumlah Barang Belanjaan:", min_value=1, max_value=100, value=5)
-        submit_button = st.form_submit_button("Masuk Antrean", type="primary")
-        
-        if submit_button:
-            if nama_pelanggan.strip():
-                antrean.tambah_pelanggan(nama_pelanggan, jumlah_item)
-                st.success(f"🛒 Pelanggan '{nama_pelanggan}' dengan membawa {jumlah_item} barang berhasil masuk ke antrean!")
-                time.sleep(1)
+        if st.button("Masuk Sistem Kasir 🚀", type="primary", use_container_width=True):
+            if username == "admin" and password == "123":
+                st.session_state.is_logged_in = True
                 st.rerun()
             else:
-                st.warning("Harap masukkan nama pelanggan terlebih dahulu.")
+                st.error("Username atau Password salah! (Hint: admin / 123)")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-# MENU 4: PROSES CHECKOUT
-elif menu == "🧾 Proses Checkout":
-    st.markdown('<h1 class="title-premium">🧾 Meja Kasir (Proses Pelayanan)</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle-premium">Lokasi pemrosesan transaksi pembayaran belanja</p>', unsafe_allow_html=True)
+# ==========================================
+# GERBANG 2: HALAMAN UTAMA (SETELAH LOGIN)
+# ==========================================
+else:
+    st.sidebar.markdown("<h2 style='color:#38bdf8 !important;'>🏪 Menu Navigasi</h2>", unsafe_allow_html=True)
     
-    if antrean.is_empty():
-        st.info("🎉 Semua antrean sudah selesai diproses. Kasir sedang kosong!")
-    else:
-        pelanggan_depan = antrean.head
-        st.warning(f"Pelanggan berikutnya yang harus dilayani: **{pelanggan_depan.nama}** ({pelanggan_depan.jumlah_barang} barang).")
+    menu = st.sidebar.radio(
+        "Pilih Halaman:",
+        [
+            "🏠 Beranda Utama", 
+            "🛍️ Lihat Daftar Produk",
+            "👥 Lihat Antrean Kasir", 
+            "➕ Tambah Pelanggan Baru", 
+            "🧾 Proses Kasir (Checkout)", 
+            "📊 Riwayat Transaksi Keluar"
+        ]
+    )
+    
+    st.sidebar.markdown("---")
+    if st.sidebar.button("🚪 Keluar / Logout", type="primary", use_container_width=True):
+        st.session_state.is_logged_in = False
+        st.rerun()
+
+    # MENU 1: BERANDA
+    if menu == "🏠 Beranda Utama":
+        st.markdown('<h1 style="color: #38bdf8;">🛒 Dashboard Antrean Kasir</h1>', unsafe_allow_html=True)
         
-        if st.button("Proses & Selesaikan Pembayaran", type="primary"):
-            dilayani = antrean.layani_pelanggan()
-            if dilayani:
-                st.success(f"✅ Selesai! Pembayaran atas nama **{dilayani.nama}** berhasil diproses.")
-                st.info(f"Kasir telah sukses memindai {dilayani.jumlah_barang} item barang.")
-                time.sleep(1.5)
-                st.rerun()
+        st.markdown("""
+        <div class="clean-box">
+            <h4>💡 Cara Kerja Struktur Data Antrean (Queue)</h4>
+            <p>Program ini dibuat menggunakan metode <b>FIFO (First In First Out)</b>. Pelanggan yang pertama kali dimasukkan ke antrean akan menjadi orang yang pertama kali dilayani oleh kasir.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Hitung panjang antrean manual tanpa library tambahan
+        panjang = 0
+        curr = antrean.head
+        while curr:
+            panjang += 1
+            curr = curr.next
+            
+        st.write(f"### 🔴 Pelanggan Menunggu Saat Ini: **{panjang} Orang**")
+        st.write(f"### 🟢 Total Pelanggan Sukses Dilayani: **{antrean.total_pelanggan_dilayani} Orang**")
 
-# MENU 5: TENTANG APLIKASI
-elif menu == "ℹ️ Tentang Aplikasi":
-    st.markdown('<h1 class="title-premium">ℹ️ Tentang Aplikasi</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle-premium">Detail teknis sistem aplikasi simulasi kasir</p>', unsafe_allow_html=True)
-    
-    with st.container():
-        st.markdown("### 🧠 Landasan Teori Struktur Data")
-        st.markdown("- **Linked List (Pointer):** Setiap elemen antrean dibentuk dari kelas `PelangganNode` yang menyimpan referensi ke elemen setelahnya (*Dynamic Memory Allocation*).")
-        st.markdown("- **Queue (Antrean):** Struktur data linier yang bekerja secara **First In First Out (FIFO)**. Operasi penambahan dilakukan di bagian belakang (*Tail*) dan pengurangan dilakukan di bagian depan (*Head*).")
-        st.caption("Dibuat untuk keperluan tugas demonstrasi akademis.")
+    # MENU 2: LIHAT DAFTAR PRODUK
+    elif menu == "🛍️ Lihat Daftar Produk":
+        st.markdown('<h1 style="color: #38bdf8;">🛍️ Daftar Produk Toko</h1>', unsafe_allow_html=True)
+        st.write("Berikut adalah daftar master barang yang tersedia di supermarket:")
+        
+        st.markdown('<div class="clean-box">', unsafe_allow_html=True)
+        for produk in st.session_state.data_produk:
+            st.write(f"- {produk}")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # MENU 3: LIHAT ANTREAN KASIR
+    elif menu == "👥 Lihat Antrean Kasir":
+        st.markdown('<h1 style="color: #38bdf8;">👥 Urutan Barisan Antrean</h1>', unsafe_allow_html=True)
+        antrean_teks = antrean.dapatkan_antrean_string()
+        st.text_area("Daftar Urutan (Paling atas berarti antrean terdepan):", value=antrean_teks, height=200, disabled=True)
+
+    # MENU 4: TAMBAH PELANGGAN BARU
+    elif menu == "➕ Tambah Pelanggan Baru":
+        st.markdown('<h1 style="color: #38bdf8;">➕ Tambah Pelanggan Ke Antrean</h1>', unsafe_allow_html=True)
+        
+        with st.form("form_tambah"):
+            nama = st.text_input("Nama Pelanggan:")
+            barang = st.number_input("Jumlah Barang Belanjaan:", min_value=1, value=5)
+            if st.form_submit_button("Masukkan Ke Antrean"):
+                if nama.strip():
+                    antrean.tambah_pelanggan(nama, barang)
+                    st.success(f"Pelanggan '{nama}' berhasil masuk antrean!")
+                else:
+                    st.warning("Nama tidak boleh kosong!")
+
+    # MENU 5: PROSES CHECKOUT
+    elif menu == "🧾 Proses Kasir (Checkout)":
+        st.markdown('<h1 style="color: #38bdf8;">🧾 Meja Pembayaran Kasir</h1>', unsafe_allow_html=True)
+        
+        if antrean.is_empty():
+            st.info("Antrean kosong! Kasir sedang tidak melayani siapapun.")
+        else:
+            pelanggan_depan = antrean.head
+            total_harga = pelanggan_depan.jumlah_barang * 15000
+            
+            st.write(f"### Pelanggan Terdepan: **{pelanggan_depan.nama}**")
+            st.write(f"Bawaan: {pelanggan_depan.jumlah_barang} barang")
+            st.write(f"### 💰 Total Tagihan: **Rp {total_harga:,}**")
+            
+            if st.button("Selesaikan Transaksi", type="primary"):
+                dilayani = antrean.layani_pelanggan()
+                if dilayani:
+                    # Simpan catatan string sederhana ke list riwayat
+                    catatan = f"Pelanggan {dilayani.nama} membeli {dilayani.jumlah_barang} barang (Total: Rp {total_harga:,})"
+                    st.session_state.riwayat_transaksi.append(catatan)
+                    st.success("Transaksi sukses diproses!")
+                    st.rerun()
+
+    # MENU 6: RIWAYAT TRANSAKSI KELUAR
+    elif menu == "📊 Riwayat Transaksi Keluar":
+        st.markdown('<h1 style="color: #38bdf8;">📊 Riwayat Transaksi Hari Ini</h1>', unsafe_allow_html=True)
+        
+        if not st.session_state.riwayat_transaksi:
+            st.info("Belum ada transaksi pembayaran yang selesai.")
+        else:
+            st.markdown('<div class="clean-box">', unsafe_allow_html=True)
+            for item in st.session_state.riwayat_transaksi:
+                st.write(f"✅ {item}")
+            st.markdown('</div>', unsafe_allow_html=True)
