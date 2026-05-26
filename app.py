@@ -56,32 +56,45 @@ class QueueSupermarket:
 # ==========================================
 st.set_page_config(page_title="FreshMart Express", layout="wide")
 
-# --- CUSTOM CSS FIX: ELEGAN & TIDAK MERUSAK KOMPONEN BAWAAN ---
+# --- CUSTOM CSS: DIPERBAIKI TOTAL AGAR KONTRAS & TIDAK GELAP/TABRAKAN ---
 custom_css = """
 <style>
-    /* Latar belakang aplikasi utama */
+    /* Latar Belakang Utama Aplikasi */
     .stApp {
         background-color: #0b0f17 !important;
     }
     
-    /* Desain navigasi samping (Sidebar) */
+    /* Pengaturan Warna Teks Global agar Kelihatan (Putih Cerah) */
+    h1, h2, h3, h4, h5, h6, p, span, label, li, div, .stText {
+        color: #f1f5f9 !important;
+        font-family: 'Segoe UI', Arial, sans-serif !important;
+    }
+    
+    /* Warna teks abu-abu terang untuk label form/input agar kontras */
+    [data-testid="stWidgetLabel"] p {
+        color: #cbd5e1 !important;
+    }
+    
+    /* Navigasi Samping (Sidebar) */
     [data-testid="stSidebar"] {
         background-color: #06090e !important;
         border-right: 1px solid #1e293b !important;
     }
     
-    /* Kotak konten kustom buatan kita (Clean Box) */
+    /* Kotak Konten Kustom (Clean Box) dengan Border Menyala */
     .clean-box {
-        background: rgba(255, 255, 255, 0.04) !important;
-        border: 1px solid rgba(56, 189, 248, 0.2) !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(56, 189, 248, 0.3) !important;
+        border-left: 6px solid #38bdf8 !important;
         border-radius: 12px !important;
         padding: 24px !important;
         margin-bottom: 20px !important;
     }
     
-    /* Mengubah warna teks khusus di dalam kelas box kita saja agar tidak merusak elemen luar */
-    .clean-box p, .clean-box h4 {
-        font-family: 'Segoe UI', Arial, sans-serif !important;
+    /* Memperbaiki warna teks di dalam teks area memori */
+    textarea {
+        color: #f1f5f9 !important;
+        background-color: #111827 !important;
     }
 </style>
 """
@@ -123,17 +136,16 @@ if 'database_produk' not in st.session_state:
 antrean = st.session_state.antrean_kasir
 
 # ==========================================
-# HALAMAN 1: LOGIN
+# HALAMAN 1: LOGIN (MENGGUNAKAN LOGO KAMPUS)
 # ==========================================
 if not st.session_state.is_logged_in:
     col_l, col_m, col_r = st.columns([1, 1.1, 1])
     
     with col_m:
         st.markdown('<div style="text-align:center; margin-top:60px; margin-bottom:20px;">', unsafe_allow_html=True)
-        # Menggunakan logo GAIS Global Institute secara rapi
         logo_url = "https://global.ac.id/wp-content/uploads/2021/01/logo-global-80.png"
         st.image(logo_url, width=130)
-        st.markdown('<h1 style="font-size: 28px; font-weight: 600; letter-spacing: 1px; margin-top:15px; color:#f1f5f9;">FreshMart Express</h1>', unsafe_allow_html=True)
+        st.markdown('<h1 style="font-size: 28px; font-weight: 600; letter-spacing: 1px; margin-top:15px;">FreshMart Express</h1>', unsafe_allow_html=True)
         st.markdown('<p style="color: #64748b; font-size: 13px;">Sistem Informasi Manajemen Antrean Kasir</p>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
@@ -141,38 +153,4 @@ if not st.session_state.is_logged_in:
         username = st.text_input("Username / NIK Pegawai:")
         password = st.text_input("Password:", type="password")
         
-        st.markdown('<div style="margin-top: 15px;"></div>', unsafe_allow_html=True)
-        if st.button("Masuk ke Sistem", type="primary", use_container_width=True):
-            if username == "admin" and password == "123":
-                st.session_state.is_logged_in = True
-                st.rerun()
-            else:
-                st.error("Kredensial yang Anda masukkan salah.")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-# ==========================================
-# HALAMAN 2: DASHBOARD UTAMA
-# ==========================================
-else:
-    st.sidebar.markdown("<h3 style='letter-spacing: 1px; font-weight:600; margin-bottom:0; color:#f1f5f9;'>FreshMart Express</h3>", unsafe_allow_html=True)
-    st.sidebar.markdown("<p style='color:#64748b; font-size:12px; margin-top:0;'>Otoritas Kasir: Aktif</p>", unsafe_allow_html=True)
-    st.sidebar.markdown("---")
-    
-    menu = st.sidebar.radio(
-        "Menu Navigasi:",
-        [
-            "Beranda Utama", 
-            "Daftar Produk Toko",
-            "Monitor Antrean", 
-            "Tambah Pelanggan Baru", 
-            "Proses Pembayaran (Checkout)", 
-            "Riwayat Jurnal Transaksi"
-        ]
-    )
-    
-    st.sidebar.markdown("---")
-    if st.sidebar.button("Keluar Sistem", type="secondary", use_container_width=True):
-        st.session_state.is_logged_in = False
-        st.rerun()
-
-    # MENU 1:
+        st.markdown('<div style="margin-top: 15px;"></div>', unsafe
