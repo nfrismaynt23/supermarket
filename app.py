@@ -55,67 +55,86 @@ class QueueSupermarket:
 # ==========================================
 st.set_page_config(page_title="Checkout Supermarket", page_icon="🛒", layout="wide")
 
-# --- CUSTOM CSS: BACKGROUND MALL MODERN & ANTI-HITAM ---
+# --- CUSTOM CSS: FULL GLASSMORPHISM INTERIOR MALL ---
 custom_css = """
 <style>
-    /* Mengunci background dengan gambar interior supermarket di dalam mall/gedung modern */
+    /* 1. Pasang background gambar mall UTUH & JELAS di seluruh aplikasi */
     .stApp {
-        background: linear-gradient(rgba(248, 250, 252, 0.88), rgba(248, 250, 252, 0.88)), 
+        background: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)), 
                     url('https://images.unsplash.com/photo-1534723452862-4c874018d66d?q=80&w=2070&auto=format&fit=crop');
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
     }
     
-    /* MEMAKSA semua teks berwarna gelap tajam (Anti tenggelam / anti hitam semua) */
-    h1, h2, h3, h4, p, span, label, th, td, li {
+    /* 2. Mengubah Menu Navigasi Samping (Sidebar) jadi Putih Kaca Transparan */
+    [data-testid="stSidebar"] {
+        background: rgba(255, 255, 255, 0.65) !important;
+        backdrop-filter: blur(15px) !important;
+        -webkit-backdrop-filter: blur(15px) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.4) !important;
+    }
+    
+    /* 3. Kunci semua warna teks di aplikasi (termasuk sidebar) agar TETAP HITAM TAJAM */
+    h1, h2, h3, h4, p, span, label, th, td, li, div {
         color: #0F172A !important;
         font-family: 'Segoe UI', Roboto, sans-serif !important;
     }
     
-    /* Judul Utama */
+    /* Warna teks khusus pilihan radio button di sidebar agar hitam pekat */
+    [data-testid="stWidgetLabel"] p, .st-dc, .st-da, .st-db {
+        color: #0F172A !important;
+        font-weight: 600 !important;
+    }
+    
+    /* 4. Desain Judul Premium */
     .title-premium {
         font-size: 38px !important;
         font-weight: 800 !important;
-        color: #1E3A8A !important; /* Biru Navy Premium */
+        color: #1E3A8A !important; /* Biru Navy */
+        text-shadow: 1px 1px 3px rgba(255,255,255,0.8);
         margin-bottom: 2px !important;
     }
     
     .subtitle-premium {
         font-size: 18px !important;
-        font-weight: 500 !important;
-        color: #475569 !important;
+        font-weight: 600 !important;
+        color: #334155 !important;
+        text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
         margin-bottom: 30px !important;
     }
 
-    /* Box Informasi Putih Solid agar kontras dengan background */
+    /* 5. Kotak Konten Utama Efek Kaca Transparan Mewah */
     .clean-box {
-        background-color: #FFFFFF !important;
+        background: rgba(255, 255, 255, 0.75) !important;
+        backdrop-filter: blur(8px);
         border-left: 6px solid #2563EB !important;
         border-radius: 12px !important;
         padding: 22px !important;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05) !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
         margin-bottom: 25px !important;
     }
     
-    /* Kotak Angka Merah Halus */
+    /* Kotak Angka Merah Transparan */
     .card-wait {
-        background-color: #FFF5F5 !important;
-        border: 1px solid #FEB2B2 !important;
+        background: rgba(254, 242, 242, 0.85) !important;
+        backdrop-filter: blur(5px);
+        border: 1px solid #FCA5A5 !important;
         border-radius: 12px !important;
         padding: 20px !important;
         text-align: center !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02) !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
     }
     
-    /* Kotak Angka Hijau Halus */
+    /* Kotak Angka Hijau Transparan */
     .card-success {
-        background-color: #F0FDF4 !important;
-        border: 1px solid #9AE6B4 !important;
+        background: rgba(240, 253, 244, 0.85) !important;
+        backdrop-filter: blur(5px);
+        border: 1px solid #86EFAC !important;
         border-radius: 12px !important;
         padding: 20px !important;
         text-align: center !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02) !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
     }
 </style>
 """
@@ -128,9 +147,9 @@ if 'antrean_kasir' not in st.session_state:
 antrean = st.session_state.antrean_kasir
 
 # ==========================================
-# SIDEBAR NAVIGATION
+# SIDEBAR NAVIGATION (PUTIH KACA)
 # ==========================================
-st.sidebar.title("🏪 Navigasi Menu")
+st.sidebar.markdown("<h2 style='font-weight:800; color:#1E3A8A !important; margin-top:20px;'>🏪 Navigasi Menu</h2>", unsafe_allow_html=True)
 st.sidebar.write("Silakan pilih menu:")
 
 menu = st.sidebar.radio(
@@ -157,7 +176,7 @@ if menu == "🏠 Beranda":
     st.markdown("""
     <div class="clean-box">
         <h4 style="margin-top:0; color:#1E3A8A !important; font-weight:700;">💡 Alur Kerja Antrean Kasir</h4>
-        <p style="margin:0; font-size:15px; line-height:1.6;">
+        <p style="margin:0; font-size:15px; line-height:1.6; font-weight:500;">
             Aplikasi ini mensimulasikan kasir pusat belanja besar di dalam gedung/mall secara riil. 
             Menerapkan metode <b>First In, First Out (FIFO)</b>, di mana setiap pelanggan baru yang datang 
             akan mengantre di belakang, dan kasir akan menyelesaikan belanjaan dari orang yang berada di barisan paling depan terlebih dahulu.
@@ -165,7 +184,7 @@ if menu == "🏠 Beranda":
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("<h3 style='font-weight:700; margin-bottom:15px;'>📊 Ringkasan Status Meja Kasir</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-weight:700; margin-bottom:15px; text-shadow: 1px 1px 2px white;'>📊 Ringkasan Status Meja Kasir</h3>", unsafe_allow_html=True)
     
     panjang = 0
     curr = antrean.head
@@ -177,7 +196,7 @@ if menu == "🏠 Beranda":
     with col1:
         st.markdown(f"""
         <div class="card-wait">
-            <p style="margin:0; font-size:15px; font-weight:600; color:#991B1B !important;">Pelanggan Menunggu Saat Ini</p>
+            <p style="margin:0; font-size:16px; font-weight:700; color:#991B1B !important;">Pelanggan Menunggu Saat Ini</p>
             <p style="margin:5px 0 0 0; font-size:38px; font-weight:800; color:#E53E3E !important;">{panjang} Orang</p>
         </div>
         """, unsafe_allow_html=True)
@@ -185,7 +204,7 @@ if menu == "🏠 Beranda":
     with col2:
         st.markdown(f"""
         <div class="card-success">
-            <p style="margin:0; font-size:15px; font-weight:600; color:#166534 !important;">Total Sukses Dilayani</p>
+            <p style="margin:0; font-size:16px; font-weight:700; color:#166534 !important;">Total Sukses Dilayani</p>
             <p style="margin:5px 0 0 0; font-size:38px; font-weight:800; color:#38A169 !important;">{antrean.total_pelanggan_dilayani} Orang</p>
         </div>
         """, unsafe_allow_html=True)
