@@ -1,4 +1,5 @@
 import streamlit as st
+import random
 
 # ==========================================
 # KELAS NODE PELANGGAN & ANTRIAN (QUEUE)
@@ -47,7 +48,7 @@ class QueueSupermarket:
         while sekarang:
             jumlah_item = len(sekarang.list_belanjaan)
             hasil += f"[{nomor}] {sekarang.nama} ({jumlah_item} Item Barang)\n"
-            sekarang = brass_node = sekarang.next
+            sekarang = sekarang.next
             nomor += 1
         return hasil
 
@@ -73,7 +74,6 @@ custom_css = """
         background-color: #06090e !important;
         border-right: 1px solid #1e293b !important;
     }
-    /* Memaksa teks di dalam sidebar agar tetap kontras */
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {
         color: #f1f5f9 !important;
     }
@@ -89,9 +89,30 @@ custom_css = """
         color: #f1f5f9 !important;
         background-color: #111827 !important;
     }
-    /* Mengatasi teks metrik yang memudar pada dark mode */
     [data-testid="stMetricValue"] {
         color: #38bdf8 !important;
+    }
+    
+    /* --- STYLE KHUSUS UNTUK STRUK NOTA KASIR --- */
+    .struk-container {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        font-family: 'Courier New', Courier, monospace !important;
+        padding: 20px;
+        border-radius: 4px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        max-width: 400px;
+        margin: 15px auto;
+        border: 1px solid #ddd;
+    }
+    .struk-container pre {
+        background-color: transparent !important;
+        color: #000000 !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-family: 'Courier New', Courier, monospace !important;
+        white-space: pre-wrap !important;
     }
 </style>
 """
@@ -104,6 +125,8 @@ if 'is_logged_in' not in st.session_state:
     st.session_state.is_logged_in = False
 if 'riwayat_transaksi' not in st.session_state:
     st.session_state.riwayat_transaksi = []
+if 'struk_terakhir' not in st.session_state:
+    st.session_state.struk_terakhir = None
 
 # MASTER DATABASE: 20 PRODUK SUPERMARKET
 if 'database_produk' not in st.session_state:
@@ -182,6 +205,7 @@ else:
     st.sidebar.markdown("---")
     if st.sidebar.button("Keluar Sistem", type="secondary", use_container_width=True):
         st.session_state.is_logged_in = False
+        st.session_state.struk_terakhir = None
         st.rerun()
 
     # MENU 1: BERANDA UTAMA
@@ -260,7 +284,6 @@ else:
                     st.warning("Pelanggan minimal harus membeli 1 barang untuk mengantre.")
                 else:
                     total_harga_hitung = sum(st.session_state.database_produk[item] for item in pilihan_barang)
-                    # FIX: Parameter sudah disesuaikan dengan posisi blueprint class
                     st.session_state.antrean_kasir.tambah_pelanggan(nama_input, pilihan_barang, total_harga_hitung)
                     st.success(f"Sukses! Pelanggan '{nama_input}' berhasil ditambahkan ke antrean.")
                     st.rerun()
@@ -269,43 +292,86 @@ else:
     elif menu == "Proses Pembayaran (Checkout)":
         st.markdown('<h2>Meja Transaksi Utama</h2>', unsafe_allow_html=True)
         
-        if antrean.is_empty():
-            st.info("Sistem siap. Tidak ada antrean pelanggan saat ini.")
-        else:
-            pelanggan_depan = antrean.head
-            
-            st.write(f"Pelanggan Terdepan: **{pelanggan_depan.nama}**")
-            st.write("Daftar belanjaan yang dibawa:")
-            
-            st.markdown('<div class="clean-box" style="background-color: #1f2937 !important;">', unsafe_allow_html=True)
-            for b in pelanggan_depan.list_belanjaan:
-                st.write(f"- {b} (Rp {st.session_state.database_produk[b]:,})")
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-            st.write(f"### Total Invoice: **Rp {pelanggan_depan.total_harga:,}**")
-            
-            st.markdown("---")
-            uang_bayar = st.number_input("Masukkan Jumlah Uang Tunai (Rp):", min_value=0, step=500, value=0)
-            
-            if uang_bayar > 0:
-                if uang_bayar < pelanggan_depan.total_harga:
-                    kekurangan = pelanggan_depan.total_harga - uang_bayar
-                    st.error(f"Uang tunai kurang! Kurang sebesar: Rp {kekurangan:,}")
-                else:
-                    kembalian = uang_bayar - pelanggan_depan.total_harga
-                    st.success(f"### Uang Kembalian: **Rp {kembalian:,}**")
-            
-            if st.button("Selesaikan Pembayaran & Cetak Nota", type="primary"):
-                if uang_bayar < pelanggan_depan.total_harga:
-                    st.error("Transaksi ditolak. Harap masukkan jumlah uang tunai yang cukup.")
-                else:
-                    kembalian_final = uang_bayar - pelanggan_depan.total_harga
-                    dilayani = st.session_state.antrean_kasir.layani_pelanggan()
-                    if dilayani:
-                        catatan = f"Pelanggan {dilayani.nama} • Total: Rp {dilayani.total_harga:,} • Cash: Rp {uang_bayar:,} • Kembali: Rp {kembalian_final:,} [Selesai]"
-                        st.session_state.riwayat_transaksi.append(catatan)
-                        st.success("Transaksi berhasil diproses. Antrean bergeser.")
-                        st.rerun()
+        col_kiri, col_kanan = st.columns([1.2, 1])
+        
+        with col_kiri:
+            if antrean.is_empty():
+                st.info("Sistem siap. Tidak ada antrean pelanggan saat ini.")
+            else:
+                pelanggan_depan = antrean.head
+                
+                st.write(f"Pelanggan Terdepan: **{pelanggan_depan.nama}**")
+                st.write("Daftar belanjaan yang dibawa:")
+                
+                st.markdown('<div class="clean-box" style="background-color: #1f2937 !important;">', unsafe_allow_html=True)
+                for b in pelanggan_depan.list_belanjaan:
+                    st.write(f"- {b} (Rp {st.session_state.database_produk[b]:,})")
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+                st.write(f"### Total Invoice: **Rp {pelanggan_depan.total_harga:,}**")
+                
+                st.markdown("---")
+                uang_bayar = st.number_input("Masukkan Jumlah Uang Tunai (Rp):", min_value=0, step=500, value=0)
+                
+                if uang_bayar > 0:
+                    if uang_bayar < pelanggan_depan.total_harga:
+                        kekurangan = pelanggan_depan.total_harga - uang_bayar
+                        st.error(f"Uang tunai kurang! Kurang sebesar: Rp {kekurangan:,}")
+                    else:
+                        kembalian = uang_bayar - pelanggan_depan.total_harga
+                        st.success(f"### Uang Kembalian: **Rp {kembalian:,}**")
+                
+                if st.button("Selesaikan Pembayaran & Cetak Nota", type="primary", use_container_width=True):
+                    if uang_bayar < pelanggan_depan.total_harga:
+                        st.error("Transaksi ditolak. Harap masukkan jumlah uang tunai yang cukup.")
+                    else:
+                        kembalian_final = uang_bayar - pelanggan_depan.total_harga
+                        
+                        # --- PROSES MEMBUAT TEMPLATE STRUK FISIK KASIR ---
+                        no_transaksi = f"TRX-{random.randint(10000, 99999)}"
+                        item_struk = ""
+                        for b in pelanggan_depan.list_belanjaan:
+                            harga = st.session_state.database_produk[b]
+                            # Format tata letak teks agar rata kiri-kanan rapi khas struk belanja
+                            item_struk += f"{b:<24} Rp{harga:>8,}\n"
+                        
+                        template_struk = f"""
+========================================
+           FRESHMART EXPRESS            
+        Sistem Antrean Kasir FIFO       
+========================================
+No. Trans : {no_transaksi}
+Pelanggan : {pelanggan_depan.nama}
+Kasir     : Admin Aktif
+----------------------------------------
+{item_struk}----------------------------------------
+TOTAL             : Rp{pelanggan_depan.total_harga:>8,}
+TUNAI/CASH        : Rp{uang_bayar:>8,}
+KEMBALIAN         : Rp{kembalian_final:>8,}
+----------------------------------------
+  Terima Kasih Atas Kunjungan Anda!   
+========================================
+"""
+                        # Simpan ke session state agar tetap tampil setelah di-refresh/rerun
+                        st.session_state.struk_terakhir = template_struk
+                        
+                        dilayani = st.session_state.antrean_kasir.layani_pelanggan()
+                        if dilayani:
+                            catatan = f"Pelanggan {dilayani.nama} • Total: Rp {dilayani.total_harga:,} • Cash: Rp {uang_bayar:,} • Kembali: Rp {kembalian_final:,} [Selesai]"
+                            st.session_state.riwayat_transaksi.append(catatan)
+                            st.rerun()
+
+        # KOLOM KANAN: UNTUK MENAMPILKAN NOTA/STRUK YANG SUDAH DICETAK
+        with col_kanan:
+            st.markdown("### 📄 Nota Transaksi Terakhir")
+            if st.session_state.struk_terakhir:
+                st.markdown(f"""
+                <div class="struk-container">
+                    <pre>{st.session_state.struk_terakhir}</pre>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.caption("Belum ada struk transaksi yang dicetak di sesi ini.")
 
     # MENU 6: RIWAYAT TRANSAKSI KELUAR
     elif menu == "Riwayat Jurnal Transaksi":
