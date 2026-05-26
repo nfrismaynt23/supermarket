@@ -60,10 +60,7 @@ class QueueSupermarket:
 # ==========================================
 # PROGRAM UTAMA (STREAMLIT UI)
 # ==========================================
-st.set_page_config(page_title="Checkout Supermarket", page_icon="🛒")
-
-st.title("🛒 Simulasi Antrean Checkout Supermarket")
-st.write("Aplikasi interaktif simulasi pelayanan kasir dengan struktur data Queue (FIFO).")
+st.set_page_config(page_title="Checkout Supermarket", page_icon="🛒", layout="wide")
 
 # Inisialisasi session state agar data antrean tidak hilang saat refresh/klik tombol
 if 'antrean_kasir' not in st.session_state:
@@ -71,17 +68,61 @@ if 'antrean_kasir' not in st.session_state:
 
 antrean = st.session_state.antrean_kasir
 
-# Sistem Tab sesuai dengan referensi file app (1).py
-tab1, tab2, tab3 = st.tabs(["👥 Lihat Antrean", "➕ Pelanggan Baru", "🧾 Proses Checkout"])
+# ==========================================
+# SIDEBAR NAVIGATION (MENU UTAMA)
+# ==========================================
+st.sidebar.title("🏪 Navigasi Menu")
+st.sidebar.write("Silakan pilih menu di bawah ini:")
 
-# TAB 1: Lihat Antrean Saat Ini
-with tab1:
-    st.subheader("Kondisi Antrean Kasir Saat Ini")
+# Membuat pilihan menu menggunakan radio button di sidebar
+menu = st.sidebar.radio(
+    "Pilih Halaman:",
+    ["🏠 Beranda", "👥 Lihat Antrean", "➕ Tambah Pelanggan", "🧾 Proses Checkout", "ℹ️ Tentang Aplikasi"]
+)
+
+# Tombol Reset Sistem ditaruh di bawah menu sidebar agar rapi
+st.sidebar.markdown("---")
+if st.sidebar.button("🚨 Reset Sistem Kasir", type="secondary"):
+    st.session_state.antrean_kasir = QueueSupermarket()
+    st.success("Sistem berhasil direset!")
+    time.sleep(1)
+    st.rerun()
+
+
+# ==========================================
+# KONDISI LOGIKA UNTUK TIAP MENU
+# ==========================================
+
+# MENU 1: BERANDA
+if menu == "🏠 Beranda":
+    st.title("🛒 Selamat Datang di Simulasi Antrean Supermarket")
+    st.subheader("Sistem Manajemen Antrean Kasir Berbasis Struktur Data Queue (FIFO)")
+    st.write("")
+    st.write("""
+    Aplikasi ini dirancang untuk mensimulasikan bagaimana sebuah antrean di kasir supermarket berjalan.
+    Dengan prinsip **First In, First Out (FIFO)**, pelanggan yang pertama kali mengantre akan menjadi yang pertama kali dilayani.
+    """)
+    
+    # Menampilkan ringkasan status saat ini di Beranda
+    st.markdown("### 📊 Status Kasir Saat Ini")
+    panjang = 0
+    curr = antrean.head
+    while curr:
+        panjang += 1
+        curr = curr.next
+        
+    col1, col2 = st.columns(2)
+    col1.metric("Pelanggan Menunggu", f"{panjang} Orang")
+    col2.metric("Total Sukses Dilayani", f"{antrean.total_pelanggan_dilayani} Orang")
+
+# MENU 2: LIHAT ANTREAN
+elif menu == "👥 Lihat Antrean":
+    st.title("👥 Kondisi Antrean Kasir Saat Ini")
+    st.write("Berikut adalah daftar pelanggan yang sedang mengantre di meja kasir.")
     
     # Statistik Singkat
     col1, col2 = st.columns(2)
     with col1:
-        # Menghitung panjang antrean manual
         panjang = 0
         curr = antrean.head
         while curr:
@@ -95,35 +136,39 @@ with tab1:
     
     # Menampilkan visualisasi teks antrean
     antrean_teks = antrean.dapatkan_antrean_string()
-    st.code(antrean_teks, language="text")
+    st.text_area("Daftar Antrean (Urutan teratas adalah yang terdepan):", value=antrean_teks, height=200, disabled=True)
 
-# TAB 2: Menambahkan Pelanggan Baru (Enqueue)
-with tab2:
-    st.subheader("Masukkan Pelanggan ke Antrean")
-    nama_pelanggan = st.text_input("Nama Pelanggan:")
-    jumlah_item = st.number_input("Jumlah Barang Belanjaan:", min_value=1, max_value=100, value=5)
+# MENU 3: TAMBAH PELANGGAN
+elif menu == "➕ Tambah Pelanggan":
+    st.title("➕ Masukkan Pelanggan Baru")
+    st.write("Gunakan formulir ini untuk menambahkan pelanggan yang baru selesai berbelanja ke dalam antrean.")
     
-    if st.button("Masuk Antrean", type="primary"):
-        if nama_pelanggan.strip():
-            antrean.tambah_pelanggan(nama_pelanggan, jumlah_item)
-            st.success(f"🛒 '{nama_pelanggan}' (membawa {jumlah_item} barang) berhasil masuk ke antrean kasir!")
-            time.sleep(1)
-            st.rerun()
-        else:
-            st.warning("Harap masukkan nama pelanggan terlebih dahulu.")
+    with st.form("form_pelanggan", clear_on_submit=True):
+        nama_pelanggan = st.text_input("Nama Pelanggan:")
+        jumlah_item = st.number_input("Jumlah Barang Belanjaan:", min_value=1, max_value=100, value=5)
+        submit_button = st.form_submit_button("Masuk Antrean", type="primary")
+        
+        if submit_button:
+            if nama_pelanggan.strip():
+                antrean.tambah_pelanggan(nama_pelanggan, jumlah_item)
+                st.success(f"🛒 '{nama_pelanggan}' ({jumlah_item} barang) berhasil masuk ke antrean!")
+                time.sleep(1)
+                st.rerun()
+            else:
+                st.warning("Harap masukkan nama pelanggan terlebih dahulu.")
 
-# TAB 3: Proses Checkout (Dequeue)
-with tab3:
-    st.subheader("Meja Kasir (Pelayanan)")
+# MENU 4: PROSES CHECKOUT
+elif menu == "🧾 Proses Checkout":
+    st.title("🧾 Meja Kasir (Proses Pelayanan)")
+    st.write("Menu khusus untuk kasir memproses pembayaran pelanggan satu per satu.")
     
     if antrean.is_empty():
-        st.info("Tidak ada pelanggan di dalam antrean saat ini.")
+        st.info("🎉 Semua antrean sudah selesai diproses. Kasir sedang senggang!")
     else:
         pelanggan_depan = antrean.head
-        st.warning(f"Pelanggan berikutnya yang akan dilayani: **{pelanggan_depan.nama}** ({pelanggan_depan.jumlah_barang} barang).")
+        st.warning(f"Pelanggan berikutnya yang harus dilayani: **{pelanggan_depan.nama}** ({pelanggan_depan.jumlah_barang} barang).")
         
-        if st.button("Proses & Selesaikan Pembayaran"):
-            # Proses dequeue
+        if st.button("Proses & Selesaikan Pembayaran", type="primary"):
             dilayani = antrean.layani_pelanggan()
             if dilayani:
                 st.success(f"✅ Selesai! Pembayaran atas nama **{dilayani.nama}** berhasil diproses.")
@@ -131,8 +176,13 @@ with tab3:
                 time.sleep(1.5)
                 st.rerun()
 
-# Tombol Reset Sistem
-st.divider()
-if st.button("Reset Sistem / Kosongkan Kasir"):
-    st.session_state.antrean_kasir = QueueSupermarket()
-    st.rerun()
+# MENU 5: TENTANG APLIKASI
+elif menu == "ℹ️ Tentang Aplikasi":
+    st.title("ℹ️ Tentang Aplikasi")
+    st.write("""
+    Aplikasi **Simulasi Antrean Checkout Supermarket** ini dibuat menggunakan bahasa pemrograman **Python** dan framework **Streamlit**.
+    
+    ### 🧠 Konsep Struktur Data yang Digunakan:
+    * **Linked List:** Digunakan untuk mengalokasikan memori antrean secara dinamis (menggunakan `PelangganNode`).
+    * **Queue (Antrean):** Menerapkan prinsip **FIFO (First In, First Out)** di mana elemen yang pertama kali masuk (`tambah_pelanggan`) akan menjadi elemen yang pertama kali keluar (`layani_pelanggan`).
+    """)
