@@ -56,7 +56,6 @@ class QueueSupermarket:
 st.set_page_config(page_title="Checkout Supermarket", page_icon="🛒", layout="wide")
 
 # --- CUSTOM CSS CLEAN & PROFESSIONAL THEME ---
-# Memaksa warna background dan teks agar konsisten & tajam (Anti Gagal Dark Mode)
 custom_css = """
 <style>
     /* Background utama aplikasi dibuat abu-abu sangat muda bersih */
@@ -65,7 +64,7 @@ custom_css = """
     }
     
     /* Memaksa semua teks reguler berwarna gelap tajam agar terbaca */
-    p, span, label, th, td, h1, h2, h3, h4 {
+    p, span, label, th, td, h1, h2, h3, h4, li {
         color: #0F172A !important;
         font-family: 'Inter', 'Segoe UI', sans-serif !important;
     }
@@ -74,7 +73,7 @@ custom_css = """
     .app-title {
         font-size: 36px !important;
         font-weight: 800 !important;
-        color: #1E3A8A !important; /* Warna Biru Navy Profesional */
+        color: #1E3A8A !important; /* Warna Biru Navy */
         margin-bottom: 2px !important;
     }
     
@@ -88,16 +87,16 @@ custom_css = """
     /* Kotak Informasi Berwarna Solid & Kontras Tinggi */
     .info-box {
         background-color: #FFFFFF !important;
-        border-left: 5px solid #2563EB !important; /* Aksen Biru */
+        border-left: 5px solid #2563EB !important;
         border-radius: 8px !important;
         padding: 20px !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
         margin-bottom: 25px !important;
     }
     
     /* Kartu Statistik Angka */
     .stat-card-red {
-        background-color: #FEF2F2 !important; /* Merah Muda Halus */
+        background-color: #FEF2F2 !important;
         border: 1px solid #FCA5A5 !important;
         border-radius: 12px !important;
         padding: 20px !important;
@@ -105,7 +104,7 @@ custom_css = """
     }
     
     .stat-card-green {
-        background-color: #F0FDF4 !important; /* Hijau Muda Halus */
+        background-color: #F0FDF4 !important;
         border: 1px solid #86EFAC !important;
         border-radius: 12px !important;
         padding: 20px !important;
@@ -148,7 +147,6 @@ if menu == "🏠 Beranda":
     st.markdown('<h1 class="app-title">🛒 Selamat Datang di Simulasi Antrean Supermarket</h1>', unsafe_allow_html=True)
     st.markdown('<p class="app-subtitle">Sistem Manajemen Antrean Kasir Berbasis Struktur Data Queue (FIFO)</p>', unsafe_allow_html=True)
     
-    # Box Informasi Utama
     st.markdown("""
     <div class="info-box">
         <h4 style="margin-top:0; color:#1E3A8A !important; font-weight:700;">💡 Cara Kerja Sistem (Struktur Data Queue)</h4>
@@ -158,3 +156,46 @@ if menu == "🏠 Beranda":
             akan diprioritaskan untuk dilayani terlebih dahulu sebelum pelanggan yang datang setelahnya.
         </p>
     </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<h3 style='font-weight:700; margin-bottom:15px;'>📊 Ringkasan Status Meja Kasir</h3>", unsafe_allow_html=True)
+    
+    panjang = 0
+    curr = antrean.head
+    while curr:
+        panjang += 1
+        curr = curr.next
+        
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(f"""
+        <div class="stat-card-red">
+            <p style="margin:0; font-size:15px; font-weight:600; color:#991B1B !important;">Pelanggan Menunggu Saat Ini</p>
+            <p style="margin:5px 0 0 0; font-size:38px; font-weight:800; color:#DC2626 !important;">{panjang} Orang</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    with col2:
+        st.markdown(f"""
+        <div class="stat-card-green">
+            <p style="margin:0; font-size:15px; font-weight:600; color:#166534 !important;">Total Sukses Dilayani</p>
+            <p style="margin:5px 0 0 0; font-size:38px; font-weight:800; color:#16A34A !important;">{antrean.total_pelanggan_dilayani} Orang</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+# MENU 2: LIHAT ANTREAN
+elif menu == "👥 Lihat Antrean":
+    st.markdown('<h1 class="app-title">👥 Kondisi Antrean Kasir Saat Ini</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="app-subtitle">Daftar urutan pelanggan yang sedang mengantre di kasir</p>', unsafe_allow_html=True)
+    
+    panjang = 0
+    curr = antrean.head
+    while curr:
+        panjang += 1
+        curr = curr.next
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric(label="Jumlah Antrean Sekarang", value=f"{panjang} Orang")
+    with col2:
+        st.metric(label="Total Pelanggan Sukses Dilayani", value=f"{antrean.total_pel
