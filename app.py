@@ -6,8 +6,8 @@ import streamlit as st
 class PelangganNode:
     def __init__(self, nama, list_belanjaan, total_harga):
         self.nama = nama
-        self.list_belanjaan = list_belanjaan  # Menyimpan daftar nama barang yang dibeli
-        self.total_harga = total_harga        # Menyimpan total harga belanjaan
+        self.list_belanjaan = list_belanjaan  # List nama barang
+        self.total_harga = total_harga        # Total harga belanjaan
         self.next = None
 
 class QueueSupermarket:
@@ -45,7 +45,6 @@ class QueueSupermarket:
         sekarang = self.head
         nomor = 1
         while sekarang:
-            # Menghitung jumlah item dari list belanjaan pelanggan
             jumlah_item = len(sekarang.list_belanjaan)
             hasil += f"[{nomor}] {sekarang.nama} ({jumlah_item} Item Barang)\n"
             sekarang = sekarang.next
@@ -85,7 +84,7 @@ custom_css = """
 """
 st.markdown(custom_css, unsafe_allow_html=True)
 
-# --- INISIALISASI DATA KASIR ---
+# --- INISIALISASI DATA DI SESSION STATE (SANGAT PENTING AGAR TIDAK ERROR) ---
 if 'antrean_kasir' not in st.session_state:
     st.session_state.antrean_kasir = QueueSupermarket()
 if 'is_logged_in' not in st.session_state:
@@ -93,7 +92,7 @@ if 'is_logged_in' not in st.session_state:
 if 'riwayat_transaksi' not in st.session_state:
     st.session_state.riwayat_transaksi = []
 
-# MASTER DATABASE: 20 PRODUK SUPERMARKET (Dicatat dalam bentuk Dictionary agar mudah dibaca kodenya)
+# MASTER DATABASE: 20 PRODUK SUPERMARKET
 if 'database_produk' not in st.session_state:
     st.session_state.database_produk = {
         "Minyak Goreng 2L": 36000,
@@ -118,6 +117,7 @@ if 'database_produk' not in st.session_state:
         "Tisu Wajah 200 sheets": 9000
     }
 
+# Ambil referensi objek dari session state
 antrean = st.session_state.antrean_kasir
 
 # ==========================================
@@ -198,12 +198,11 @@ else:
         with col_b2:
             st.metric("Total Pelanggan Terlayani", f"{antrean.total_pelanggan_dilayani} Orang")
 
-    # MENU 2: LIHAT DAFTAR PRODUK (20 BARANG)
+    # MENU 2: LIHAT DAFTAR PRODUK
     elif menu == "Daftar Produk Toko":
         st.markdown('<h2>Katalog Produk Aktif (20 Item)</h2>', unsafe_allow_html=True)
         
         st.markdown('<div class="clean-box">', unsafe_allow_html=True)
-        # Looping untuk menampilkan 20 produk dari dictionary
         nomor_urut = 1
         for nama_barang, harga_barang in st.session_state.database_produk.items():
             st.markdown(f"<p style='font-size:15px; margin-bottom:6px;'>{nomor_urut}. <b>{nama_barang}</b> — Rp {harga_barang:,}</p>", unsafe_allow_html=True)
@@ -216,35 +215,35 @@ else:
         antrean_teks = antrean.dapatkan_antrean_string()
         st.text_area("Data Node Memori saat ini (FIFO):", value=antrean_teks, height=200, disabled=True)
 
-    # MENU 4: TAMBAH PELANGGAN BARU (FITUR KLIK BELANJA INTERAKTIF)
+    # MENU 4: TAMBAH PELANGGAN BARU (SUDAH DIPERBAIKI)
     elif menu == "Tambah Pelanggan Baru":
         st.markdown('<h2>Registrasi Kedatangan Pelanggan</h2>', unsafe_allow_html=True)
         
-        with st.form("form_tambah"):
-            nama = st.text_input("Nama Pelanggan:")
+        with st.form("form_tambah", clear_on_submit=True):
+            nama_input = st.text_input("Nama Pelanggan:")
             
-            # FITUR KLIK PRODUK: Mengambil daftar kunci (nama barang) dari dictionary produk
             pilihan_barang = st.multiselect(
                 "Pilih Barang Yang Dibeli (Bisa klik lebih dari satu):",
                 options=list(st.session_state.database_produk.keys())
             )
             
-            if st.form_submit_button("Masukkan ke Antrean"):
-                if not nama.strip():
+            submit_button = st.form_submit_button("Masukkan ke Antrean")
+            
+            if submit_button:
+                if not nama_input.strip():
                     st.warning("Kolom nama wajib diisi.")
                 elif not pilihan_barang:
                     st.warning("Pelanggan minimal harus membeli 1 barang untuk mengantre.")
                 else:
-                    # Menghitung total harga belanjaan dari barang-barang yang diklik
-                    total_harga_hitung = 0
-                    for barang in pilihan_barang:
-                        total_harga_hitung += st.session_state.database_produk[barang]
+                    # Proses perhitungan total harga produk pilihan
+                    total_harga_hitung = sum(st.session_state.database_produk[item] for item in pilihan_barang)
                     
-                    # Daftarkan node pelanggan baru ke struktur data Queue
-                    antrean.tambah_pelanggan(nama, pilihan_barang, total_harga_hitung)
-                    st.success(f"Pelanggan '{nama}' dengan {len(pilihan_barang)} item berhasil didaftarkan.")
+                    # Tambahkan langsung ke dalam state antrean
+                    st.session_state.antrean_kasir.tambah_pelanggan(nama_input, pilihan_barang, total_harga_hitung)
+                    st.success(f"Sukses! Pelanggan '{nama_input}' berhasil ditambahkan ke antrean.")
+                    st.rerun()
 
-    # MENU 5: PROSES CHECKOUT (MENAMPILKAN RINCIAN BARANG YANG DIKLIK)
+    # MENU 5: PROSES CHECKOUT
     elif menu == "Proses Pembayaran (Checkout)":
         st.markdown('<h2>Meja Transaksi Utama</h2>', unsafe_allow_html=True)
         
@@ -256,7 +255,6 @@ else:
             st.write(f"Pelanggan Terdepan: **{pelanggan_depan.nama}**")
             st.write("Daftar belanjaan yang dibawa:")
             
-            # Menampilkan list barang yang diklik oleh pelanggan tersebut
             st.markdown('<div class="clean-box" style="background-color: #1f2937 !important;">', unsafe_allow_html=True)
             for b in pelanggan_depan.list_belanjaan:
                 st.write(f"- {b} (Rp {st.session_state.database_produk[b]:,})")
@@ -265,7 +263,7 @@ else:
             st.write(f"### Total Invoice: **Rp {pelanggan_depan.total_harga:,}**")
             
             if st.button("Selesaikan Pembayaran", type="primary"):
-                dilayani = antrean.layani_pelanggan()
+                dilayani = st.session_state.antrean_kasir.layani_pelanggan()
                 if dilayani:
                     catatan = f"Pelanggan {dilayani.nama} • {len(dilayani.list_belanjaan)} item • Total: Rp {dilayani.total_harga:,} [Selesai]"
                     st.session_state.riwayat_transaksi.append(catatan)
