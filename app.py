@@ -55,65 +55,6 @@ class QueueSupermarket:
 # ==========================================
 st.set_page_config(page_title="Checkout Supermarket", page_icon="🛒", layout="wide")
 
-# --- CUSTOM CSS CLEAN & PROFESSIONAL THEME ---
-custom_css = """
-<style>
-    /* Background utama aplikasi dibuat abu-abu sangat muda bersih */
-    .stApp {
-        background-color: #F8FAFC !important;
-    }
-    
-    /* Memaksa semua teks reguler berwarna gelap tajam agar terbaca */
-    p, span, label, th, td, h1, h2, h3, h4, li {
-        color: #0F172A !important;
-        font-family: 'Inter', 'Segoe UI', sans-serif !important;
-    }
-    
-    /* Judul Premium */
-    .app-title {
-        font-size: 36px !important;
-        font-weight: 800 !important;
-        color: #1E3A8A !important; /* Warna Biru Navy */
-        margin-bottom: 2px !important;
-    }
-    
-    .app-subtitle {
-        font-size: 18px !important;
-        font-weight: 400 !important;
-        color: #475569 !important;
-        margin-bottom: 30px !important;
-    }
-
-    /* Kotak Informasi Berwarna Solid & Kontras Tinggi */
-    .info-box {
-        background-color: #FFFFFF !important;
-        border-left: 5px solid #2563EB !important;
-        border-radius: 8px !important;
-        padding: 20px !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
-        margin-bottom: 25px !important;
-    }
-    
-    /* Kartu Statistik Angka */
-    .stat-card-red {
-        background-color: #FEF2F2 !important;
-        border: 1px solid #FCA5A5 !important;
-        border-radius: 12px !important;
-        padding: 20px !important;
-        text-align: center !important;
-    }
-    
-    .stat-card-green {
-        background-color: #F0FDF4 !important;
-        border: 1px solid #86EFAC !important;
-        border-radius: 12px !important;
-        padding: 20px !important;
-        text-align: center !important;
-    }
-</style>
-"""
-st.markdown(custom_css, unsafe_allow_html=True)
-
 # Inisialisasi session state
 if 'antrean_kasir' not in st.session_state:
     st.session_state.antrean_kasir = QueueSupermarket()
@@ -144,22 +85,22 @@ if st.sidebar.button("🚨 Reset Sistem Kasir", type="secondary"):
 
 # MENU 1: BERANDA
 if menu == "🏠 Beranda":
-    st.markdown('<h1 class="app-title">🛒 Selamat Datang di Simulasi Antrean Supermarket</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="app-subtitle">Sistem Manajemen Antrean Kasir Berbasis Struktur Data Queue (FIFO)</p>', unsafe_allow_html=True)
+    st.title("🛒 Selamat Datang di Simulasi Antrean Supermarket")
+    st.write("Sistem Manajemen Antrean Kasir Berbasis Struktur Data Queue (FIFO)")
     
-    st.markdown("""
-    <div class="info-box">
-        <h4 style="margin-top:0; color:#1E3A8A !important; font-weight:700;">💡 Cara Kerja Sistem (Struktur Data Queue)</h4>
-        <p style="margin:0; font-size:15px; line-height:1.6;">
-            Aplikasi ini mensimulasikan alur pelayanan kasir di sebuah market secara riil. 
-            Menggunakan metode <b>First In, First Out (FIFO)</b>, pelanggan yang pertama kali mengantre 
-            akan diprioritaskan untuk dilayani terlebih dahulu sebelum pelanggan yang datang setelahnya.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    # Menggunakan border kontainer bawaan agar aman di dark/light mode
+    with st.container(border=True):
+        st.subheader("💡 Cara Kerja Sistem (Struktur Data Queue)")
+        st.write(
+            "Aplikasi ini mensimulasikan alur pelayanan kasir di sebuah market secara riil. "
+            "Menggunakan metode **First In, First Out (FIFO)**, pelanggan yang pertama kali mengantre "
+            "akan diprioritaskan untuk dilayani terlebih dahulu sebelum pelanggan yang datang setelahnya."
+        )
     
-    st.markdown("<h3 style='font-weight:700; margin-bottom:15px;'>📊 Ringkasan Status Meja Kasir</h3>", unsafe_allow_html=True)
+    st.write("")
+    st.subheader("📊 Ringkasan Status Meja Kasir")
     
+    # Hitung data antrean saat ini
     panjang = 0
     curr = antrean.head
     while curr:
@@ -168,25 +109,17 @@ if menu == "🏠 Beranda":
         
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown(f"""
-        <div class="stat-card-red">
-            <p style="margin:0; font-size:15px; font-weight:600; color:#991B1B !important;">Pelanggan Menunggu Saat Ini</p>
-            <p style="margin:5px 0 0 0; font-size:38px; font-weight:800; color:#DC2626 !important;">{panjang} Orang</p>
-        </div>
-        """, unsafe_allow_html=True)
+        with st.container(border=True):
+            st.metric(label="Pelanggan Menunggu Saat Ini", value=f"{panjang} Orang", delta="- Menunggu")
         
     with col2:
-        st.markdown(f"""
-        <div class="stat-card-green">
-            <p style="margin:0; font-size:15px; font-weight:600; color:#166534 !important;">Total Sukses Dilayani</p>
-            <p style="margin:5px 0 0 0; font-size:38px; font-weight:800; color:#16A34A !important;">{antrean.total_pelanggan_dilayani} Orang</p>
-        </div>
-        """, unsafe_allow_html=True)
+        with st.container(border=True):
+            st.metric(label="Total Sukses Dilayani", value=f"{antrean.total_pelanggan_dilayani} Orang", delta="✅ Sukses", delta_color="inverse")
 
 # MENU 2: LIHAT ANTREAN
 elif menu == "👥 Lihat Antrean":
-    st.markdown('<h1 class="app-title">👥 Kondisi Antrean Kasir Saat Ini</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="app-subtitle">Daftar urutan pelanggan yang sedang mengantre di kasir</p>', unsafe_allow_html=True)
+    st.title("👥 Kondisi Antrean Kasir Saat Ini")
+    st.write("Daftar urutan pelanggan yang sedang mengantre di kasir")
     
     panjang = 0
     curr = antrean.head
@@ -198,4 +131,57 @@ elif menu == "👥 Lihat Antrean":
     with col1:
         st.metric(label="Jumlah Antrean Sekarang", value=f"{panjang} Orang")
     with col2:
-        st.metric(label="Total Pelanggan Sukses Dilayani", value=f"{antrean.total_pel
+        st.metric(label="Total Pelanggan Sukses Dilayani", value=f"{antrean.total_pelanggan_dilayani} Orang")
+    
+    st.write("---")
+    antrean_teks = antrean.dapatkan_antrean_string()
+    st.text_area("Urutan Antrean (Baris paling atas adalah antrean terdepan):", value=antrean_teks, height=250, disabled=True)
+
+# MENU 3: TAMBAH PELANGGAN
+elif menu == "➕ Tambah Pelanggan":
+    st.title("➕ Masukkan Pelanggan Baru")
+    st.write("Tambahkan data pelanggan yang baru menuju kasir")
+    
+    with st.form("form_pelanggan", clear_on_submit=True):
+        nama_pelanggan = st.text_input("Nama Pelanggan:")
+        jumlah_item = st.number_input("Jumlah Barang Belanjaan:", min_value=1, max_value=100, value=5)
+        submit_button = st.form_submit_button("Masukkan ke Antrean", type="primary")
+        
+        if submit_button:
+            if nama_pelanggan.strip():
+                antrean.tambah_pelanggan(nama_pelanggan, jumlah_item)
+                st.success(f"🛒 Pelanggan '{nama_pelanggan}' dengan membawa {jumlah_item} barang berhasil masuk ke antrean!")
+                time.sleep(1)
+                st.rerun()
+            else:
+                st.warning("Harap masukkan nama pelanggan terlebih dahulu.")
+
+# MENU 4: PROSES CHECKOUT
+elif menu == "🧾 Proses Checkout":
+    st.title("🧾 Meja Kasir (Proses Pelayanan)")
+    st.write("Lokasi pemrosesan transaksi pembayaran belanja")
+    
+    if antrean.is_empty():
+        st.info("🎉 Semua antrean sudah selesai diproses. Kasir sedang kosong!")
+    else:
+        pelanggan_depan = antrean.head
+        st.warning(f"Pelanggan berikutnya yang harus dilayani: **{pelanggan_depan.nama}** ({pelanggan_depan.jumlah_barang} barang).")
+        
+        if st.button("Proses & Selesaikan Pembayaran", type="primary"):
+            dilayani = antrean.layani_pelanggan()
+            if dilayani:
+                st.success(f"✅ Selesai! Pembayaran atas nama **{dilayani.nama}** berhasil diproses.")
+                st.info(f"Kasir telah sukses memindai {dilayani.jumlah_barang} item barang.")
+                time.sleep(1.5)
+                st.rerun()
+
+# MENU 5: TENTANG APLIKASI
+elif menu == "ℹ️ Tentang Aplikasi":
+    st.title("ℹ️ Tentang Aplikasi")
+    st.write("Detail teknis sistem aplikasi simulasi kasir")
+    
+    with st.container(border=True):
+        st.subheader("🧠 Landasan Teori Struktur Data")
+        st.markdown("- **Linked List (Pointer):** Setiap elemen antrean dibentuk dari kelas `PelangganNode` yang menyimpan referensi ke elemen setelahnya (*Dynamic Memory Allocation*).")
+        st.markdown("- **Queue (Antrean):** Struktur data linier yang bekerja secara **First In First Out (FIFO)**. Operasi penambahan dilakukan di bagian belakang (*Tail*) dan pengurangan dilakukan di bagian depan (*Head*).")
+        st.caption("Dibuat untuk keperluan tugas demonstrasi akademis.")
